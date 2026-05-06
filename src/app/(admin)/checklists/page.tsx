@@ -1,0 +1,32 @@
+import { DocumentWorkspace } from "@/components/document-workspace";
+import { getModuleBySlug } from "@/lib/modules";
+import { CheckCircle2 } from "lucide-react";
+
+const initialChecklist = [
+  "Identificar unidade responsavel e autoridade revisora.",
+  "Conferir documentos essenciais e anexos informados.",
+  "Registrar providencias pendentes antes do encaminhamento.",
+  "Submeter a minuta a revisao humana obrigatoria."
+];
+
+export default function ChecklistsPage() {
+  const module = getModuleBySlug("checklists");
+
+  return (
+    <div className="space-y-6">
+      <DocumentWorkspace module={module} />
+
+      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <h2 className="text-base font-semibold text-gi-ink">Checklist base</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {initialChecklist.map((item) => (
+            <div key={item} className="flex min-h-14 items-start gap-3 rounded-md border border-gi-line p-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none text-gi-teal" aria-hidden="true" />
+              <span className="text-sm leading-5 text-gi-ink">{item}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
