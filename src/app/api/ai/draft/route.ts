@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
-import { HUMAN_REVIEW_NOTICE, getModuleBySlug, isModuleSlug } from "@/lib/modules";
+import { buildStructuredPayload, getFormDefinition, type FormValue, type FormValues } from "@/lib/forms";
+import { HUMAN_REVIEW_NOTICE, getModuleBySlug, isModuleSlug, type ModuleSlug } from "@/lib/modules";
 
 export const runtime = "nodejs";
 
 type DraftRequest = {
   moduleSlug?: string;
-  fields?: Record<string, string>;
+  fields?: FormValues;
+  context?: string;
 };
 
 export async function POST(request: Request) {
@@ -24,16 +26,14 @@ export async function POST(request: Request) {
 
   const module = getModuleBySlug(moduleSlug);
   const fields = normalizeFields(body.fields || {});
-  const context = buildContext(module, fields);
+  const context = body.context?.trim() || buildStructuredPayload(getFormDefinition(moduleSlug), fields);
 
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      {
-        draft: ensureHumanReviewNotice(createDemoDraft(moduleSlug, fields), HUMAN_REVIEW_NOTICE),
-        mode: "demo",
-        notice: HUMAN_REVIEW_NOTICE
-      }
-    );
+    return NextResponse.json({
+      draft: ensureHumanReviewNotice(createDemoDraft(moduleSlug, fields, context), HUMAN_REVIEW_NOTICE),
+      mode: "demo",
+      notice: HUMAN_REVIEW_NOTICE
+    });
   }
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -52,11 +52,16 @@ export async function POST(request: Request) {
         content: [
           modulePrompt,
           "",
-          "Dados fornecidos pelo usuário:",
+          "Dados estruturados fornecidos pelo usuário:",
           context,
           "",
           "Módulo solicitado:",
-          module.name
+          module.name,
+          "",
+          "Exigências permanentes:",
+          "1. Não inventar fatos, documentos, artigos, jurisprudência ou fundamentos não fornecidos.",
+          "2. Não sugerir substituição de advogado, procurador, controlador interno, autoridade administrativa ou servidor responsável.",
+          "3. Manter aviso de revisão humana obrigatória."
         ].join("\n")
       }
     ]
@@ -84,52 +89,149 @@ function ensureHumanReviewNotice(content: string, notice: string) {
   return `${content}\n\n${notice}`;
 }
 
-function normalizeFields(fields: Record<string, string>) {
+function normalizeFields(fields: FormValues): FormValues {
   return Object.fromEntries(
-    Object.entries(fields).map(([key, value]) => [key, String(value || "").trim()])
+    Object.entries(fields).map(([key, value]) => [key, normalizeValue(value)])
   );
 }
 
-function buildContext(module: ReturnType<typeof getModuleBySlug>, fields: Record<string, string>) {
-  return module.fields
-    .map((field) => {
-      const value = fields[field.name] || "[não informado]";
-      return `${field.label}: ${value}`;
-    })
-    .join("\n");
+function normalizeValue(value: FormValue): FormValue {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim());
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return String(value || "").trim();
 }
 
-function readField(fields: Record<string, string>, key: string, fallback = "[não informado]") {
-  return fields[key] || fallback;
+function text(fields: FormValues, key: string, fallback = "[não informado]") {
+  const value = fields[key];
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Sim" : "Não";
+  }
+
+  if (Array.isArray(value) && value.some(Boolean)) {
+    return value.filter(Boolean).join("; ");
+  }
+
+  return fallback;
 }
 
-function createDemoDraft(moduleSlug: string, fields: Record<string, string>) {
+function list(fields: FormValues, key: string, fallback = "Não informado.") {
+  const value = fields[key];
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const items = value.map((item) => item.trim()).filter(Boolean);
+  if (!items.length) {
+    return fallback;
+  }
+
+  return items.map((item, index) => `${index + 1}. ${item}`).join("\n");
+}
+
+function yesNo(fields: FormValues, key: string) {
+  return fields[key] === true ? "Sim" : "Não";
+}
+
+function createDemoDraft(moduleSlug: ModuleSlug, fields: FormValues, context: string) {
   const header = [
     "MINUTA DEMONSTRATIVA",
     "",
-    "Este texto foi gerado em modo demonstração porque a variável OPENAI_API_KEY não está configurada. O conteúdo abaixo simula a estrutura documental do módulo, não constitui orientação jurídica, parecer final, decisão administrativa ou manifestação oficial."
+    "Este texto foi gerado em modo demonstração porque a variável OPENAI_API_KEY não está configurada. A finalidade é testar o fluxo visual do sistema. O conteúdo não constitui parecer jurídico final, decisão administrativa, orientação vinculante ou manifestação oficial."
   ].join("\n");
 
-  if (moduleSlug === "ministerio-publico") {
+  if (moduleSlug === "oficios") {
     return [
       header,
       "",
-      "AO MINISTÉRIO PÚBLICO",
+      "OFÍCIO ADMINISTRATIVO DEMONSTRATIVO",
       "",
-      `Referência: ${readField(fields, "procedimento")}`,
-      `Órgão ministerial: ${readField(fields, "orgao_ministerial")}`,
+      `Remetente: ${text(fields, "orgao_secretaria_remetente")}`,
+      `Unidade responsável: ${text(fields, "unidade_administrativa_responsavel")}`,
+      `Número interno: ${text(fields, "numero_interno_oficio")}`,
+      `Data: ${text(fields, "data_documento")}`,
+      "",
+      `Ao(À) ${text(fields, "destinatario")}`,
+      `${text(fields, "cargo_funcao_destinatario")}`,
+      `${text(fields, "orgao_destinatario")}`,
+      "",
+      `Assunto: ${text(fields, "assunto")}`,
+      `Referência: ${text(fields, "referencia_anterior")}`,
+      "",
+      "Senhor(a),",
+      "",
+      `Cumprimentando-o(a) cordialmente, encaminha-se a presente minuta demonstrativa de ${text(fields, "tipo_oficio").toLowerCase()}, elaborada a partir dos dados estruturados informados pelo usuário.`,
+      "",
+      `Conforme síntese apresentada, registram-se os seguintes fatos: ${text(fields, "sintese_fatos")}.`,
+      "",
+      `A providência solicitada ou comunicada consiste em: ${text(fields, "providencia_solicitada_comunicada")}. Prazo mencionado: ${text(fields, "prazo_mencionado")}.`,
+      "",
+      `Caso necessário, as informações poderão ser complementadas pelo seguinte setor: ${text(fields, "setor_complementar")}.`,
+      "",
+      "Documentos anexos:",
+      list(fields, "documentos_anexos"),
+      "",
+      "Ressalva-se que a presente minuta depende de conferência dos documentos, validação do setor competente e autorização da autoridade responsável antes de qualquer envio oficial.",
+      "",
+      "Atenciosamente,",
+      "",
+      text(fields, "signatario")
+    ].join("\n");
+  }
+
+  if (moduleSlug === "ministerio-publico") {
+    const onlyAsked =
+      text(fields, "orientacao_resposta") === "Responder apenas ao solicitado"
+        ? "A resposta deve permanecer limitada às perguntas formuladas, sem acréscimos que ampliem indevidamente o objeto."
+        : "A resposta pode prestar esclarecimentos adicionais, desde que amparados por documentos e validação interna.";
+
+    return [
+      header,
+      "",
+      "RESPOSTA ADMINISTRATIVA DEMONSTRATIVA AO MINISTÉRIO PÚBLICO",
+      "",
+      `Destinatário: ${text(fields, "orgao_ministerial_destinatario")}`,
+      `Promotor(a), se informado: ${text(fields, "nome_promotor")}`,
+      `Procedimento/protocolo: ${text(fields, "numero_procedimento")}`,
+      `Ofício/requisição recebida: ${text(fields, "numero_oficio_requisicao")}`,
+      `Data de recebimento: ${text(fields, "data_recebimento")}`,
+      `Prazo de resposta: ${text(fields, "prazo_resposta")}`,
       "",
       "Senhor(a) Promotor(a) de Justiça,",
       "",
-      `Em atenção ao expediente acima referido, o Município apresenta, em caráter preliminar, as informações administrativas disponíveis sobre a demanda assim sintetizada: ${readField(fields, "teor_requisicao")}.`,
+      `Em atenção à requisição recebida, a ${text(fields, "unidade_responsavel_resposta")} apresenta, em caráter demonstrativo, informações administrativas sobre o seguinte assunto: ${text(fields, "assunto_central_requisicao")}.`,
       "",
-      `Conforme os elementos atualmente informados, registram-se os seguintes fatos apurados pela Administração: ${readField(fields, "fatos_apurados")}.`,
+      "Perguntas formuladas pelo Ministério Público:",
+      list(fields, "perguntas_mp"),
       "",
-      `Quanto às providências já adotadas, consta: ${readField(fields, "providencias_adotadas")}. Eventuais pendências ou providências em andamento foram indicadas nos seguintes termos: ${readField(fields, "pendencias")}.`,
+      onlyAsked,
       "",
-      `Documentos mencionados para conferência e eventual remessa: ${readField(fields, "documentos")}. Prazo informado: ${readField(fields, "prazo_resposta")}.`,
+      `Fatos comprovados pela Administração: ${text(fields, "fatos_comprovados")}.`,
       "",
-      "A presente minuta deve ser conferida pela unidade técnica responsável e submetida à autoridade competente antes de qualquer encaminhamento oficial."
+      `Providências já adotadas: ${text(fields, "providencias_adotadas")}. Providências em andamento: ${text(fields, "providencias_em_andamento")}.`,
+      "",
+      `Informações dependentes de outro setor: ${text(fields, "informacoes_dependentes_outro_setor")}. Setores a consultar antes do envio: ${text(fields, "setores_consultar")}.`,
+      "",
+      "Documentos anexos disponíveis:",
+      list(fields, "documentos_anexos_disponiveis"),
+      "",
+      `Pontos sensíveis que não devem ser afirmados sem prova: ${text(fields, "pontos_sensiveis_sem_prova")}. Risco de responsabilização ou tema delicado: ${yesNo(fields, "risco_responsabilizacao")}.`,
+      "",
+      "A minuta evita confissão de irregularidade, promessa futura sem base documental e afirmações não comprovadas. Havendo lacunas, recomenda-se complementação antes do envio.",
+      "",
+      "Atenciosamente,",
+      "",
+      text(fields, "signatario")
     ].join("\n");
   }
 
@@ -137,27 +239,40 @@ function createDemoDraft(moduleSlug: string, fields: Record<string, string>) {
     return [
       header,
       "",
-      readField(fields, "tipo_manifestacao", "PARECER PRELIMINAR").toUpperCase(),
+      "PARECER ADMINISTRATIVO PRELIMINAR DEMONSTRATIVO",
+      "",
+      `Órgão consulente: ${text(fields, "orgao_consulente")}`,
+      `Autoridade consulente: ${text(fields, "autoridade_consulente")}`,
+      `Assunto: ${text(fields, "assunto")}`,
+      `Tipo de consulta: ${text(fields, "tipo_consulta")}`,
       "",
       "I. Relatório",
       "",
-      `Submete-se à análise preliminar a seguinte consulta: ${readField(fields, "consulta")}.`,
+      text(fields, "relatorio_fatos"),
       "",
-      "II. Delimitação",
+      "II. Delimitação da consulta",
       "",
-      `A apreciação demonstrativa considera exclusivamente os fatos informados pelo usuário: ${readField(fields, "fatos")}. Documentos disponíveis: ${readField(fields, "documentos")}.`,
+      text(fields, "pedido_duvida_submetida"),
       "",
-      "III. Análise preliminar",
+      "III. Fundamentação preliminar",
       "",
-      `As normas indicadas pelo usuário foram: ${readField(fields, "normas_conhecidas")}. Não se presume existência de fundamento legal, jurisprudência ou ato normativo não fornecido no formulário.`,
+      `Documentos analisados:\n${list(fields, "documentos_analisados")}`,
       "",
-      "IV. Riscos e lacunas",
+      `Legislação municipal fornecida: ${text(fields, "legislacao_municipal_fornecida")}. Legislação federal/estadual conhecida: ${text(fields, "legislacao_federal_estadual_conhecida")}.`,
       "",
-      `Pontos de atenção informados: ${readField(fields, "riscos")}.`,
+      "IV. Análise do caso concreto",
       "",
-      "V. Conclusão preliminar",
+      `Pontos controvertidos: ${text(fields, "pontos_controvertidos")}. Riscos jurídicos/administrativos identificados: ${text(fields, "riscos_juridicos_administrativos")}.`,
       "",
-      "A minuta demonstra apenas uma estrutura inicial de análise e deve ser revisada por profissional ou autoridade competente antes de qualquer aproveitamento institucional."
+      "V. Cautelas administrativas",
+      "",
+      `Entendimento preliminar indicado: ${text(fields, "entendimento_preliminar_desejado")}. Condicionantes administrativas: ${text(fields, "condicionantes_administrativas")}.`,
+      "",
+      "VI. Conclusão preliminar",
+      "",
+      "A conclusão desta minuta demonstrativa é necessariamente condicionada à conferência documental, à validação jurídica competente e à aprovação pela autoridade responsável.",
+      "",
+      text(fields, "parecerista_setor")
     ].join("\n");
   }
 
@@ -165,24 +280,36 @@ function createDemoDraft(moduleSlug: string, fields: Record<string, string>) {
     return [
       header,
       "",
-      "FICHA DEMONSTRATIVA DE NORMA MUNICIPAL",
+      "FICHA TÉCNICA DEMONSTRATIVA DE NORMA MUNICIPAL",
       "",
-      `Espécie normativa: ${readField(fields, "especie_normativa")}`,
-      `Número: ${readField(fields, "numero")}`,
-      `Ano: ${readField(fields, "ano")}`,
-      `Tema: ${readField(fields, "tema")}`,
-      `Situação de vigência informada: ${readField(fields, "vigencia")}`,
-      `Fonte: ${readField(fields, "fonte")}`,
+      `Município/Estado: ${text(fields, "municipio")} - ${text(fields, "estado")}`,
+      `Espécie normativa: ${text(fields, "especie_normativa")}`,
+      `Número/Ano: ${text(fields, "numero")}/${text(fields, "ano")}`,
+      `Publicação: ${text(fields, "data_publicacao")}`,
+      `Vigência: ${text(fields, "data_vigencia")}`,
+      `Tema principal: ${text(fields, "tema_principal")}`,
       "",
-      "Ementa ou síntese",
+      "Ementa",
       "",
-      readField(fields, "ementa"),
+      text(fields, "ementa"),
       "",
-      "Observações para análise",
+      "Resumo",
       "",
-      readField(fields, "observacoes"),
+      text(fields, "texto_integral_resumo"),
       "",
-      "Esta ficha é apenas demonstrativa. A vigência, revogações, alterações e compatibilidade normativa dependem de conferência documental e revisão técnica."
+      "Dispositivos relevantes",
+      "",
+      list(fields, "dispositivos_relevantes"),
+      "",
+      "Relações com outras normas",
+      "",
+      `Revoga ou altera outra norma: ${text(fields, "revoga_ou_altera")}. Possível revogação por outra norma: ${text(fields, "possivelmente_revogada_por")}.`,
+      "",
+      "Pontos de atenção",
+      "",
+      text(fields, "observacoes_administrativas"),
+      "",
+      "Recomenda-se conferência de vigência, alterações, revogações e publicação oficial antes de qualquer uso administrativo ou jurídico."
     ].join("\n");
   }
 
@@ -192,45 +319,51 @@ function createDemoDraft(moduleSlug: string, fields: Record<string, string>) {
       "",
       "CHECKLIST ADMINISTRATIVO DEMONSTRATIVO",
       "",
-      `Rotina administrativa: ${readField(fields, "rotina")}`,
-      `Fase do processo: ${readField(fields, "fase_processo")}`,
+      `Tipo de rotina: ${text(fields, "tipo_rotina")}`,
+      `Secretaria responsável: ${text(fields, "secretaria_responsavel")}`,
+      `Documento/processo relacionado: ${text(fields, "documento_processo_relacionado")}`,
+      `Prazo interno: ${text(fields, "prazo_interno")}`,
+      `Responsável pela verificação: ${text(fields, "responsavel_verificacao")}`,
       "",
       "Objetivo",
       "",
-      readField(fields, "objetivo"),
+      text(fields, "objetivo_checklist"),
       "",
-      "Itens mínimos para conferência",
+      "Documentos essenciais",
       "",
-      `1. Conferir documentos exigidos: ${readField(fields, "documentos_exigidos")}.`,
-      `2. Identificar responsáveis pela análise e aprovação: ${readField(fields, "responsaveis")}.`,
-      `3. Registrar riscos e pontos de atenção: ${readField(fields, "riscos")}.`,
-      "4. Submeter a minuta, checklist ou encaminhamento à revisão humana obrigatória antes de uso oficial.",
+      list(fields, "documentos_comprobatorios"),
       "",
-      "Este checklist deve ser adaptado pela unidade competente conforme o caso concreto."
+      "Manifestações técnicas",
+      "",
+      "Verificar se há manifestação técnica da secretaria responsável e, quando aplicável, manifestação da Procuradoria, Controle Interno, Contabilidade, setor de licitações ou unidade finalística.",
+      "",
+      "Validações internas",
+      "",
+      text(fields, "setores_validar"),
+      "",
+      "Prazos e responsáveis",
+      "",
+      `Prazo interno: ${text(fields, "prazo_interno")}. Responsável: ${text(fields, "responsavel_verificacao")}.`,
+      "",
+      "Itens obrigatórios",
+      "",
+      list(fields, "itens_obrigatorios"),
+      "",
+      "Itens recomendáveis",
+      "",
+      list(fields, "itens_recomendaveis"),
+      "",
+      "Riscos e cautelas",
+      "",
+      text(fields, "riscos_item_faltar"),
+      "",
+      "Pendências antes de assinatura/protocolo",
+      "",
+      text(fields, "observacoes_finais"),
+      "",
+      "O checklist deve ser conferido pela unidade competente antes de assinatura, protocolo, publicação ou encaminhamento."
     ].join("\n");
   }
 
-  return [
-    header,
-    "",
-    "OFÍCIO DEMONSTRATIVO",
-    "",
-    `Órgão remetente: ${readField(fields, "orgao_remetente")}`,
-    `Destinatário: ${readField(fields, "destinatario")}`,
-    `Assunto: ${readField(fields, "assunto")}`,
-    "",
-    "Senhor(a),",
-    "",
-    `Cumprimentando-o(a) cordialmente, o Município, por meio do órgão acima indicado, apresenta a presente minuta demonstrativa com a finalidade de ${readField(fields, "finalidade", "formalizar comunicação administrativa").toLowerCase()}.`,
-    "",
-    `O contexto administrativo informado foi o seguinte: ${readField(fields, "fatos")}.`,
-    "",
-    `A providência solicitada ou comunicada consiste em: ${readField(fields, "providencia")}. Prazo informado: ${readField(fields, "prazo")}.`,
-    "",
-    `Documentos anexos mencionados: ${readField(fields, "anexos")}.`,
-    "",
-    "Sem mais para o momento, renova-se protesto de consideração institucional.",
-    "",
-    "[Local], [data]."
-  ].join("\n");
+  return context;
 }

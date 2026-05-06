@@ -1,20 +1,22 @@
-# Prompt — Oficio Administrativo
+# Prompt — Ofício Administrativo
 
-Elabore minuta de oficio administrativo para municipio brasileiro, com redacao formal, clara e adequada a comunicacoes oficiais.
+Elabore minuta de ofício administrativo para município brasileiro, com redação formal, clara e adequada a comunicações oficiais.
 
-Considere:
+Considere os dados estruturados fornecidos pelo usuário, especialmente remetente, unidade responsável, número interno, data, destinatário, cargo/função, órgão destinatário, assunto, referência anterior, tipo de ofício, síntese dos fatos, providência solicitada ou comunicada, prazo, anexos, setor de complementação, signatário e tom desejado.
 
-1. orgao remetente;
-2. destinatario;
-3. assunto;
-4. finalidade do oficio;
-5. fatos ou contexto administrativo;
-6. solicitacao, encaminhamento, resposta ou comunicacao pretendida;
-7. prazo, se houver;
-8. documentos anexos, se informados.
+A minuta deve conter:
 
-Nao invente fundamentos legais, fatos, documentos, cargos ou datas. Caso faltem informacoes essenciais, indique campos pendentes entre colchetes, sem criar conteudo ficticio.
+1. endereçamento;
+2. assunto;
+3. referência, quando informada;
+4. corpo do ofício;
+5. ressalvas necessárias;
+6. indicação de anexos;
+7. fecho institucional;
+8. campo de assinatura.
 
-O texto deve preservar urbanidade, objetividade e elegancia institucional.
+Não invente fundamentos legais, fatos, documentos, cargos, números, datas ou providências. Caso faltem informações essenciais, indique a pendência de forma técnica e discreta.
 
-Inclua o aviso de revisao humana obrigatoria ao final.
+O texto deve preservar urbanidade, objetividade e elegância institucional.
+
+Inclua o aviso de revisão humana obrigatória ao final.

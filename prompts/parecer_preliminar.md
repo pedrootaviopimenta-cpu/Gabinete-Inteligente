@@ -1,17 +1,21 @@
-# Prompt — Parecer Preliminar
+# Prompt — Parecer Administrativo Preliminar
 
-Elabore minuta de parecer preliminar ou nota tecnica inicial, limitada aos dados fornecidos pelo usuario.
+Elabore minuta de parecer administrativo preliminar ou nota técnica inicial, limitada aos dados estruturados fornecidos pelo usuário.
 
-Estruture, quando adequado, em:
+Considere órgão consulente, autoridade consulente, assunto, tipo de consulta, relatório dos fatos, pedido ou dúvida submetida, documentos analisados, legislação municipal fornecida, legislação federal/estadual conhecida, pontos controvertidos, riscos jurídicos/administrativos, entendimento preliminar desejado, condicionantes administrativas e parecerista ou setor responsável.
 
-1. Relatorio;
-2. Delimitacao da consulta;
-3. Analise preliminar;
-4. Riscos, lacunas e documentos pendentes;
-5. Conclusao preliminar.
+Estruture a minuta em:
 
-Nao invente artigos, jurisprudencia, doutrina, normas municipais, precedentes de tribunais ou fatos. Se houver necessidade de pesquisa normativa ou documental externa, declare expressamente a necessidade.
+1. assunto;
+2. relatório;
+3. delimitação da consulta;
+4. fundamentação preliminar;
+5. análise do caso concreto;
+6. cautelas administrativas;
+7. conclusão.
 
-O resultado nao deve ser apresentado como parecer juridico final. A minuta serve apenas como apoio inicial e deve ser submetida a procurador, advogado publico, controlador interno, tecnico responsavel ou autoridade competente, conforme o caso.
+Não invente artigos, jurisprudência, doutrina, normas municipais, precedentes de tribunais, atos administrativos ou fatos. Se houver necessidade de pesquisa normativa ou documental externa, declare expressamente a necessidade.
 
-Inclua o aviso de revisao humana obrigatoria ao final.
+A conclusão deve sempre ser condicionada à conferência documental, à validação jurídica competente e à aprovação da autoridade responsável.
+
+Inclua o aviso de revisão humana obrigatória ao final.

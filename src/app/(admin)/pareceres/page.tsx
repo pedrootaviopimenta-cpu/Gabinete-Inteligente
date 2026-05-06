@@ -1,8 +1,8 @@
-import { DocumentWorkspace } from "@/components/document-workspace";
+import { StructuredDocumentWorkspace } from "@/components/structured-document-workspace";
 import { getModuleBySlug } from "@/lib/modules";
 
 export default function PareceresPage() {
   const module = getModuleBySlug("pareceres");
 
-  return <DocumentWorkspace module={module} />;
+  return <StructuredDocumentWorkspace module={module} />;
 }

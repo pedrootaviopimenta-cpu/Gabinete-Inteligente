@@ -1,20 +1,19 @@
-# Prompt — Resposta ao Ministerio Publico
+# Prompt — Resposta ao Ministério Público
 
-Elabore minuta de resposta administrativa ao Ministerio Publico com linguagem institucional, respeitosa e objetiva.
+Elabore minuta de resposta administrativa ao Ministério Público com linguagem institucional, respeitosa, objetiva e cautelosa.
 
-Considere obrigatoriamente:
+Considere os dados estruturados fornecidos pelo usuário, especialmente órgão ministerial destinatário, nome do promotor, número do procedimento, ofício/requisição recebida, data de recebimento, prazo, unidade responsável, assunto central, perguntas formuladas, fatos comprovados, providências adotadas, providências em andamento, lacunas dependentes de outro setor, setores a consultar, documentos anexos, pontos sensíveis, risco de responsabilização, orientação de resposta e signatário.
 
-1. identificacao do procedimento, requisicao, recomendacao, oficio ou notificacao, se informado;
-2. resumo objetivo da demanda recebida;
-3. contextualizacao factual apenas com base nos dados fornecidos;
-4. providencias ja adotadas pelo municipio;
-5. providencias em andamento, se houver;
-6. documentos eventualmente anexos ou a anexar;
-7. pedido de dilacao de prazo, se solicitado pelo usuario;
-8. ressalva de que a resposta deve ser revisada e aprovada pela autoridade competente.
+A minuta deve:
 
-Nao invente fatos, datas, documentos, fundamentos legais, jurisprudencia ou atos administrativos. Quando algum dado estiver ausente, registre a pendencia de forma tecnica.
+1. responder objetivamente às perguntas formuladas;
+2. evitar confissão de irregularidade sem base documental;
+3. evitar promessa futura sem respaldo administrativo;
+4. indicar necessidade de complementação quando houver lacuna;
+5. solicitar prazo complementar quando essa for a orientação marcada;
+6. encaminhar a outro setor competente quando essa for a orientação marcada;
+7. responder apenas ao solicitado quando essa opção for indicada.
 
-Estruture a minuta com saudacao institucional, desenvolvimento em paragrafos densos e fecho formal.
+Não invente fatos, datas, documentos, fundamentos legais, jurisprudência, atos administrativos ou conclusões não fornecidas. Quando algum dado estiver ausente, registre a pendência de forma técnica.
 
-Inclua o aviso de revisao humana obrigatoria ao final.
+Inclua o aviso de revisão humana obrigatória ao final.

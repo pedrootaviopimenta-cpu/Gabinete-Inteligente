@@ -1,4 +1,4 @@
-import { DocumentWorkspace } from "@/components/document-workspace";
+import { StructuredDocumentWorkspace } from "@/components/structured-document-workspace";
 import { getModuleBySlug } from "@/lib/modules";
 import { BookMarked } from "lucide-react";
 
@@ -7,7 +7,7 @@ export default function NormasMunicipaisPage() {
 
   return (
     <div className="space-y-6">
-      <DocumentWorkspace module={module} />
+      <StructuredDocumentWorkspace module={module} />
 
       <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
         <div className="flex items-start gap-3">
