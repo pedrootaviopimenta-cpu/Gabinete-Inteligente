@@ -193,7 +193,7 @@ export function StructuredDocumentWorkspace({ module }: { module: GiModule }) {
         <aside className="rounded-lg border border-gi-line bg-white p-5 shadow-panel xl:sticky xl:top-24 xl:self-start">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-gi-ink">Preview da minuta</h2>
+              <h2 className="text-base font-semibold text-gi-ink">Pré-visualização da minuta</h2>
               <p className="mt-1 text-xs leading-5 text-gi-muted">
                 Conteúdo preliminar, sujeito à revisão humana obrigatória.
               </p>
@@ -215,7 +215,7 @@ export function StructuredDocumentWorkspace({ module }: { module: GiModule }) {
                 className="inline-flex h-9 items-center gap-2 rounded-md border border-gi-line px-3 text-sm font-medium text-gi-muted opacity-70"
               >
                 <FileDown className="h-4 w-4" aria-hidden={true} />
-                DOCX futuro
+                DOCX em fase futura
               </button>
             </div>
           </div>

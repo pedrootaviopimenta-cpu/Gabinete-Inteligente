@@ -38,7 +38,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           </div>
 
           <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação principal">
-            <NavLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+            <NavLink href="/dashboard" icon={LayoutDashboard} label="Painel" />
             {modules.map((module) => {
               const Icon = icons[module.slug];
 
@@ -70,7 +70,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 
         <div className="border-b border-gi-line bg-white px-4 py-3 lg:hidden">
           <div className="flex gap-2 overflow-x-auto" aria-label="Navegação compacta">
-            <MobileLink href="/dashboard" label="Dashboard" />
+            <MobileLink href="/dashboard" label="Painel" />
             {modules.map((module) => (
               <MobileLink key={module.slug} href={module.href} label={module.shortName} />
             ))}
