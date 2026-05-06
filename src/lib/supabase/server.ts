@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import type { CookieOptions } from "@supabase/ssr";
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -7,7 +8,7 @@ export async function createSupabaseServerClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Credenciais do Supabase nao configuradas.");
+    throw new Error("Credenciais do Supabase não configuradas.");
   }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -15,7 +16,7 @@ export async function createSupabaseServerClient() {
       getAll() {
         return cookieStore.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
         cookiesToSet.forEach(({ name, value, options }) => {
           cookieStore.set(name, value, options);
         });

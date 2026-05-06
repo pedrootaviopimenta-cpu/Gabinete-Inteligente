@@ -53,7 +53,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-2xl font-semibold text-gi-ink">Painel Administrativo</h1>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-gi-muted">
-              Ambiente inicial para producao assistida, organizacao normativa e controle de
+              Ambiente inicial para produção assistida, organização normativa e controle de
               rotinas documentais municipais.
             </p>
           </div>

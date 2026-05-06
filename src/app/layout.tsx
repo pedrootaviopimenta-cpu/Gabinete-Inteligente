@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Gabinete Inteligente — GI",
-  description: "SaaS de apoio administrativo, documental e juridico para municipios brasileiros."
+  description: "SaaS de apoio administrativo, documental e jurídico para municípios brasileiros."
 };
 
 export default function RootLayout({

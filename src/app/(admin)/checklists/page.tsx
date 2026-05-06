@@ -3,10 +3,10 @@ import { getModuleBySlug } from "@/lib/modules";
 import { CheckCircle2 } from "lucide-react";
 
 const initialChecklist = [
-  "Identificar unidade responsavel e autoridade revisora.",
+  "Identificar unidade responsável e autoridade revisora.",
   "Conferir documentos essenciais e anexos informados.",
-  "Registrar providencias pendentes antes do encaminhamento.",
-  "Submeter a minuta a revisao humana obrigatoria."
+  "Registrar providências pendentes antes do encaminhamento.",
+  "Submeter a minuta à revisão humana obrigatória."
 ];
 
 export default function ChecklistsPage() {

@@ -1,0 +1,152 @@
+import { CircleAlert, CircleCheck, KeyRound } from "lucide-react";
+import { HumanReviewNotice } from "@/components/human-review-notice";
+
+const variables = [
+  {
+    name: "OPENAI_API_KEY",
+    scope: "Servidor",
+    description: "Habilita geração real de minutas pela OpenAI API."
+  },
+  {
+    name: "OPENAI_MODEL",
+    scope: "Servidor",
+    description: "Modelo utilizado pela rota interna de geração, quando informado."
+  },
+  {
+    name: "NEXT_PUBLIC_SUPABASE_URL",
+    scope: "Cliente",
+    description: "URL pública do projeto Supabase."
+  },
+  {
+    name: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    scope: "Cliente",
+    description: "Chave pública anon do Supabase para autenticação no navegador."
+  },
+  {
+    name: "SUPABASE_SERVICE_ROLE_KEY",
+    scope: "Servidor",
+    description: "Chave privada para rotinas administrativas server-side."
+  },
+  {
+    name: "APP_BASE_URL",
+    scope: "Servidor",
+    description: "Endereço base utilizado por integrações e callbacks futuros."
+  }
+];
+
+export default function ConfiguracoesPage() {
+  const openAiConfigured = Boolean(process.env.OPENAI_API_KEY);
+
+  return (
+    <main className="space-y-6">
+      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gi-navy text-white">
+            <KeyRound className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+              Ambiente e segurança
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-gi-ink">Configurações</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-gi-muted">
+              Esta página mostra apenas o status das variáveis de ambiente. Segredos,
+              chaves privadas e tokens não são exibidos na interface.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <HumanReviewNotice />
+
+      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <h2 className="text-base font-semibold text-gi-ink">Status operacional</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <StatusPanel
+            title="Geração de minutas"
+            configured={openAiConfigured}
+            configuredText="OpenAI API configurada. As minutas podem usar geração real."
+            missingText="Modo demonstração ativo. Sem OPENAI_API_KEY, as minutas são simuladas e identificadas como demonstração."
+          />
+          <StatusPanel
+            title="Persistência Supabase"
+            configured={
+              Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+              Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+            }
+            configuredText="Credenciais públicas do Supabase configuradas."
+            missingText="Supabase ainda não configurado para autenticação e persistência."
+          />
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <h2 className="text-base font-semibold text-gi-ink">Variáveis de ambiente</h2>
+        <div className="mt-4 overflow-hidden rounded-lg border border-gi-line">
+          <div className="hidden bg-slate-100 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gi-muted sm:grid sm:grid-cols-[1.1fr_0.7fr_0.7fr]">
+            <span>Variável</span>
+            <span>Escopo</span>
+            <span>Status</span>
+          </div>
+          {variables.map((variable) => {
+            const configured = Boolean(process.env[variable.name]);
+
+            return (
+              <div
+                key={variable.name}
+                className="grid gap-3 border-t border-gi-line px-4 py-3 text-sm sm:grid-cols-[1.1fr_0.7fr_0.7fr]"
+              >
+                <div className="min-w-0">
+                  <p className="break-all font-medium text-gi-ink">{variable.name}</p>
+                  <p className="mt-1 text-xs leading-5 text-gi-muted">{variable.description}</p>
+                </div>
+                <span className="text-gi-muted">
+                  <span className="font-medium text-gi-ink sm:hidden">Escopo: </span>
+                  {variable.scope}
+                </span>
+                <span
+                  className={
+                    configured
+                      ? "font-medium text-gi-teal"
+                      : "font-medium text-gi-amber"
+                  }
+                >
+                  <span className="font-medium text-gi-ink sm:hidden">Status: </span>
+                  {configured ? "Configurada" : "Não configurada"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+type StatusPanelProps = {
+  title: string;
+  configured: boolean;
+  configuredText: string;
+  missingText: string;
+};
+
+function StatusPanel({ title, configured, configuredText, missingText }: StatusPanelProps) {
+  const Icon = configured ? CircleCheck : CircleAlert;
+
+  return (
+    <div className="rounded-lg border border-gi-line p-4">
+      <div className="flex items-start gap-3">
+        <Icon
+          className={configured ? "mt-0.5 h-5 w-5 text-gi-teal" : "mt-0.5 h-5 w-5 text-gi-amber"}
+          aria-hidden="true"
+        />
+        <div>
+          <h3 className="text-sm font-semibold text-gi-ink">{title}</h3>
+          <p className="mt-2 text-sm leading-6 text-gi-muted">
+            {configured ? configuredText : missingText}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

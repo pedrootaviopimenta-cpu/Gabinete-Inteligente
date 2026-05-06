@@ -7,7 +7,7 @@ export function HumanReviewNotice() {
       <div className="flex items-start gap-3">
         <ShieldAlert className="mt-0.5 h-5 w-5 flex-none text-gi-amber" aria-hidden="true" />
         <div>
-          <h2 className="text-sm font-semibold text-gi-ink">Revisao humana obrigatoria</h2>
+          <h2 className="text-sm font-semibold text-gi-ink">Revisão humana obrigatória</h2>
           <p className="mt-2 text-sm leading-6 text-slate-700">{HUMAN_REVIEW_NOTICE}</p>
         </div>
       </div>

@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { Building2, FileText, LayoutDashboard, Scale, ScrollText, ShieldCheck, SquareCheckBig } from "lucide-react";
+import type { Route } from "next";
+import {
+  Building2,
+  FileText,
+  LayoutDashboard,
+  Scale,
+  ScrollText,
+  Settings,
+  ShieldCheck,
+  SquareCheckBig
+} from "lucide-react";
 import { modules } from "@/lib/modules";
 
 const icons = {
@@ -27,7 +37,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
             </div>
           </div>
 
-          <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegacao principal">
+          <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação principal">
             <NavLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
             {modules.map((module) => {
               const Icon = icons[module.slug];
@@ -41,6 +51,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
                 />
               );
             })}
+            <NavLink href="/configuracoes" icon={Settings} label="Configurações" />
           </nav>
         </div>
       </aside>
@@ -52,17 +63,18 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
               Plataforma de apoio institucional
             </p>
             <p className="text-sm text-gi-muted">
-              Minutas, normas e checklists com revisao humana obrigatoria.
+              Minutas, normas e checklists com revisão humana obrigatória.
             </p>
           </div>
         </header>
 
         <div className="border-b border-gi-line bg-white px-4 py-3 lg:hidden">
-          <div className="flex gap-2 overflow-x-auto" aria-label="Navegacao compacta">
+          <div className="flex gap-2 overflow-x-auto" aria-label="Navegação compacta">
             <MobileLink href="/dashboard" label="Dashboard" />
             {modules.map((module) => (
               <MobileLink key={module.slug} href={module.href} label={module.shortName} />
             ))}
+            <MobileLink href="/configuracoes" label="Configurações" />
           </div>
         </div>
 
@@ -73,7 +85,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 }
 
 type NavLinkProps = {
-  href: string;
+  href: Route;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   label: string;
 };
@@ -84,13 +96,13 @@ function NavLink({ href, icon: Icon, label }: NavLinkProps) {
       href={href}
       className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-gi-ink transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-gi-teal"
     >
-      <Icon className="h-4 w-4 text-gi-muted" aria-hidden="true" />
+      <Icon className="h-4 w-4 text-gi-muted" aria-hidden={true} />
       <span>{label}</span>
     </Link>
   );
 }
 
-function MobileLink({ href, label }: { href: string; label: string }) {
+function MobileLink({ href, label }: { href: Route; label: string }) {
   return (
     <Link
       href={href}

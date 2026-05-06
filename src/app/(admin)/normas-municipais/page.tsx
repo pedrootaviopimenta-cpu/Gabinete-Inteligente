@@ -13,11 +13,11 @@ export default function NormasMunicipaisPage() {
         <div className="flex items-start gap-3">
           <BookMarked className="mt-1 h-5 w-5 text-gi-teal" aria-hidden="true" />
           <div>
-            <h2 className="text-base font-semibold text-gi-ink">Catalogacao normativa</h2>
+            <h2 className="text-base font-semibold text-gi-ink">Catalogação normativa</h2>
             <p className="mt-2 text-sm leading-6 text-gi-muted">
-              A estrutura de dados ja preve especie normativa, numero, ano, ementa, tema,
-              vigencia, fonte e conteudo em Markdown. A busca semantica e os vinculos de
-              revogacao podem ser adicionados em etapa posterior.
+              A estrutura de dados já prevê espécie normativa, número, ano, ementa, tema,
+              vigência, fonte e conteúdo em Markdown. A busca semântica e os vínculos de
+              revogação podem ser adicionados em etapa posterior.
             </p>
           </div>
         </div>

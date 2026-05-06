@@ -19,7 +19,7 @@ export function ModuleCard({ module }: { module: GiModule }) {
       </div>
       <p className="mt-4 text-sm leading-6 text-gi-muted">{module.description}</p>
       <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-gi-teal">
-        <span>Acessar modulo</span>
+        <span>Acessar módulo</span>
         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
       </div>
     </Link>

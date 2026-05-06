@@ -5,7 +5,7 @@ export function createSupabaseBrowserClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Credenciais publicas do Supabase nao configuradas.");
+    throw new Error("Credenciais públicas do Supabase não configuradas.");
   }
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
