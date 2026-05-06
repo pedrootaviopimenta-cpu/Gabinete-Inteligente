@@ -2,7 +2,7 @@
 
 ## 1. Síntese Técnica
 
-O Gabinete Inteligente — GI utiliza uma arquitetura web modular baseada em Next.js, TypeScript, Tailwind CSS, Supabase e integração server-side com a OpenAI API. O desenho inicial separa interface administrativa, catálogo de módulos, prompts versionados, rota de geração assistida e persistência preparada para auditoria.
+O Gabinete Inteligente — GI utiliza uma arquitetura web modular baseada em Next.js, TypeScript, Tailwind CSS, Supabase e integração server-side preparada para a OpenAI API. O desenho inicial separa interface administrativa, catálogo de módulos, formulários estruturados, solicitações assistidas, prompts versionados e persistência preparada para auditoria.
 
 ## 2. Camadas
 
@@ -16,15 +16,21 @@ Os componentes em `src/components` foram separados entre estrutura de aplicaçã
 
 ### 2.3 Inteligência Artificial
 
-A rota `src/app/api/ai/draft/route.ts` recebe dados do módulo, carrega o prompt correspondente em `prompts/`, envia a solicitação à OpenAI API no servidor e devolve o texto gerado com aviso obrigatório de revisão humana. O cliente nunca acessa `OPENAI_API_KEY`.
+A rota `src/app/api/ai/draft/route.ts` permanece preservada para modos futuros. No Modo Assistido, `GI_AI_ENABLED=false` impede a geração automática para o cliente. Quando futuramente habilitada, a chamada à OpenAI API deverá permanecer exclusivamente server-side, sem exposição de `OPENAI_API_KEY`.
 
 ### 2.4 Dados
 
-O Supabase/PostgreSQL é preparado pelo arquivo `database/schema.sql`. A modelagem inicial inclui organizações, perfis, documentos, logs de IA, normas municipais, templates de checklist, itens e execuções.
+O Supabase/PostgreSQL é preparado pelo arquivo `database/schema.sql`. A modelagem inicial inclui organizações, perfis, documentos, solicitações assistidas em `document_requests`, logs de IA, normas municipais, templates de checklist, itens e execuções.
 
-## 3. Fluxo de Geração
+## 3. Fluxo do Modo Assistido
 
-O usuário acessa um módulo, descreve o contexto administrativo e solicita uma minuta. A aplicação envia os dados à rota interna. O servidor identifica o prompt do módulo, compõe a instrução, chama a OpenAI API, adiciona aviso de revisão humana e, em evolução posterior, registrará a geração em `ai_generation_logs`.
+O usuário acessa um módulo, preenche os dados do solicitante e os campos estruturados do documento. A aplicação envia os dados à rota `src/app/api/document-requests/route.ts`. O servidor valida os campos, monta o contexto estruturado, registra a solicitação em `document_requests`, gera protocolo interno e retorna a confirmação ao cliente.
+
+O painel `src/app/(admin)/solicitacoes/page.tsx` lista as solicitações, permite filtros por status, módulo e prioridade, abre o detalhe, exibe campos e contexto estruturados, permite copiar o contexto, registrar notas internas, alterar status, inserir texto final e marcar a solicitação como concluída.
+
+## 3.1 Fluxos Futuros de IA
+
+O fluxo de IA permanece isolado na rota `/api/ai/draft`. Em modo assistido, essa rota não é exposta na interface e retorna bloqueio para requisições de geração. Em modo híbrido ou IA futuro, deverá ser reativada apenas mediante variáveis de ambiente, auditoria e revisão humana obrigatória.
 
 ## 4. Segurança
 

@@ -1,4 +1,4 @@
-import { StructuredDocumentWorkspace } from "@/components/structured-document-workspace";
+import { DocumentWorkspace } from "@/components/document-workspace";
 import { getModuleBySlug } from "@/lib/modules";
 import { CheckCircle2 } from "lucide-react";
 
@@ -14,7 +14,7 @@ export default function ChecklistsPage() {
 
   return (
     <div className="space-y-6">
-      <StructuredDocumentWorkspace module={module} />
+      <DocumentWorkspace module={module} />
 
       <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
         <h2 className="text-base font-semibold text-gi-ink">Checklist base</h2>

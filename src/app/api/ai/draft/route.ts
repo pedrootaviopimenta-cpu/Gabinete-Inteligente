@@ -3,7 +3,14 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
 import { buildStructuredPayload, getFormDefinition, type FormValue, type FormValues } from "@/lib/forms";
-import { HUMAN_REVIEW_NOTICE, getModuleBySlug, isModuleSlug, type ModuleSlug } from "@/lib/modules";
+import {
+  HUMAN_REVIEW_NOTICE,
+  getModuleBySlug,
+  isModuleSlug,
+  modules,
+  type ModuleSlug
+} from "@/lib/modules";
+import { getGiDeliveryMode, isClientAiEnabled } from "@/lib/runtime-config";
 
 export const runtime = "nodejs";
 
@@ -13,7 +20,41 @@ type DraftRequest = {
   context?: string;
 };
 
+export async function GET() {
+  const clientAiEnabled = isClientAiEnabled();
+
+  return NextResponse.json({
+    status: clientAiEnabled ? "ativo" : "preservado_desabilitado",
+    route: "/api/ai/draft",
+    generationMethod: "POST",
+    deliveryMode: getGiDeliveryMode(),
+    clientAiEnabled,
+    mode: clientAiEnabled ? (process.env.OPENAI_API_KEY ? "openai" : "demo") : "disabled",
+    message:
+      "Rota de IA preservada para uso futuro. No Modo Assistido, o cliente envia solicitações para produção documental assistida e esta rota não é exposta na interface.",
+    dashboard: "/dashboard",
+    modules: modules.map((module) => ({
+      slug: module.slug,
+      name: module.name,
+      promptFile: module.promptFile
+    })),
+    notice: HUMAN_REVIEW_NOTICE
+  });
+}
+
 export async function POST(request: Request) {
+  if (!isClientAiEnabled()) {
+    return NextResponse.json(
+      {
+        error:
+          "Geração automática por IA desabilitada no Modo Assistido. Envie a solicitação para produção assistida.",
+        deliveryMode: getGiDeliveryMode(),
+        clientAiEnabled: false
+      },
+      { status: 403 }
+    );
+  }
+
   const body = (await request.json()) as DraftRequest;
   const moduleSlug = body.moduleSlug;
 

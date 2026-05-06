@@ -8,11 +8,11 @@ Quando houver dúvida jurídica, explicite a dúvida. Quando a informação não
 
 ## 2. Limite Profissional
 
-Nenhuma funcionalidade, tela, prompt ou documentação deve sugerir que o sistema substitui procuradores, advogados, controladores internos, servidores responsáveis, autoridades administrativas ou revisão humana. Toda minuta gerada por IA deve conter aviso de revisão humana obrigatória.
+Nenhuma funcionalidade, tela, prompt ou documentação deve sugerir que o sistema substitui procuradores, advogados, controladores internos, servidores responsáveis, autoridades administrativas ou revisão humana. Toda minuta ou documento produzido com apoio do GI deve conter aviso de revisão humana obrigatória.
 
 ## 3. Diretrizes Técnicas
 
-Use TypeScript estrito, componentes pequenos, dados de módulo centralizados, segredos apenas no servidor e integração com Supabase respeitando Row Level Security. Evite acoplamento entre interface, prompts e persistência.
+Use TypeScript estrito, componentes pequenos, dados de módulo centralizados, segredos apenas no servidor e integração com Supabase respeitando Row Level Security. Evite acoplamento entre interface, prompts e persistência. O modo inicial do produto é assistido: o cliente envia solicitações, recebe protocolo e não aciona OpenAI diretamente.
 
 ## 4. Prompts
 
@@ -20,7 +20,7 @@ Prompts devem ficar em `prompts/`, em Markdown, com finalidade específica, ling
 
 ## 5. Banco de Dados
 
-Mudanças de schema devem preservar multi-tenancy por organização, auditoria de gerações e campos necessários para exportação documental futura. Não remova RLS sem justificativa expressa.
+Mudanças de schema devem preservar multi-tenancy por organização, auditoria de solicitações e gerações futuras, além de campos necessários para exportação documental futura. Não remova RLS sem justificativa expressa.
 
 ## 6. Exportação DOCX
 

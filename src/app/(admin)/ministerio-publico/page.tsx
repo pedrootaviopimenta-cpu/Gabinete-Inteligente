@@ -1,8 +1,8 @@
-import { StructuredDocumentWorkspace } from "@/components/structured-document-workspace";
+import { DocumentWorkspace } from "@/components/document-workspace";
 import { getModuleBySlug } from "@/lib/modules";
 
 export default function MinisterioPublicoPage() {
   const module = getModuleBySlug("ministerio-publico");
 
-  return <StructuredDocumentWorkspace module={module} />;
+  return <DocumentWorkspace module={module} />;
 }

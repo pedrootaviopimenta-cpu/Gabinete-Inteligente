@@ -15,6 +15,16 @@ create type public.document_status as enum (
   'archived'
 );
 
+create type public.document_request_status as enum (
+  'recebido',
+  'em_analise',
+  'aguardando_documentos',
+  'em_producao',
+  'em_revisao',
+  'concluido',
+  'cancelado'
+);
+
 create table public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -47,6 +57,26 @@ create table public.documents (
   human_review_required boolean not null default true,
   reviewed_by uuid references public.profiles(id) on delete set null,
   reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.document_requests (
+  id uuid primary key default gen_random_uuid(),
+  module_slug text not null,
+  title text not null,
+  requester_name text not null,
+  requester_email text not null,
+  requester_phone text,
+  requester_department text not null,
+  priority text not null default 'normal' check (priority in ('baixa', 'normal', 'alta', 'urgente')),
+  status public.document_request_status not null default 'recebido',
+  structured_fields jsonb not null default '{}'::jsonb,
+  structured_context text not null default '',
+  internal_notes text,
+  final_document_text text,
+  final_document_url text,
+  protocol_number text not null unique,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -128,6 +158,9 @@ create table public.checklist_run_items (
 );
 
 create index documents_organization_module_idx on public.documents (organization_id, module);
+create index document_requests_status_created_idx on public.document_requests (status, created_at desc);
+create index document_requests_module_created_idx on public.document_requests (module_slug, created_at desc);
+create index document_requests_priority_created_idx on public.document_requests (priority, created_at desc);
 create index ai_generation_logs_organization_created_idx on public.ai_generation_logs (organization_id, created_at desc);
 create index municipal_norms_organization_subject_idx on public.municipal_norms (organization_id, subject);
 create index checklist_runs_organization_created_idx on public.checklist_runs (organization_id, created_at desc);
@@ -135,6 +168,7 @@ create index checklist_runs_organization_created_idx on public.checklist_runs (o
 alter table public.organizations enable row level security;
 alter table public.profiles enable row level security;
 alter table public.documents enable row level security;
+alter table public.document_requests enable row level security;
 alter table public.ai_generation_logs enable row level security;
 alter table public.municipal_norms enable row level security;
 alter table public.checklist_templates enable row level security;

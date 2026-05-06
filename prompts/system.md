@@ -12,4 +12,4 @@ O sistema não substitui procuradores, advogados, controladores internos, servid
 
 Inclua ao final de toda minuta o seguinte aviso:
 
-> Minuta gerada com apoio de inteligência artificial. Revisão humana obrigatória por profissional ou autoridade competente antes de qualquer uso oficial, assinatura, protocolo, publicação ou encaminhamento.
+> Minuta ou documento produzido com apoio do Gabinete Inteligente. Revisão humana obrigatória por profissional ou autoridade competente antes de qualquer uso oficial, assinatura, protocolo, publicação ou encaminhamento.

@@ -30,6 +30,26 @@ Módulo para organização, catalogação e consulta de leis, decretos, portaria
 
 Módulo para checklists administrativos e processuais, voltados a rotinas de contratação, resposta institucional, tramitação interna, instrução documental e conformidade mínima.
 
+## Modo Inicial do Produto
+
+O GI opera inicialmente em **Modo Assistido**. Nesse modo, o cliente preenche formulários estruturados, informa dados do solicitante e envia uma solicitação de produção documental assistida. O sistema registra os campos, preserva o contexto estruturado, gera protocolo interno e encaminha a demanda para análise humana.
+
+A geração automática por IA permanece preparada no código para evolução futura, mas fica desabilitada para o cliente pelas variáveis:
+
+```env
+GI_DELIVERY_MODE=assisted
+GI_AI_ENABLED=false
+GI_ADMIN_AI_ENABLED=false
+```
+
+### Modos Planejados
+
+**Modo Assistido:** fluxo atual. Solicitações são registradas, acompanhadas por status e tratadas por equipe humana responsável.
+
+**Modo Híbrido futuro:** poderá permitir apoio de IA em etapas internas, sempre com revisão humana, trilha de auditoria e validação por profissional ou autoridade competente.
+
+**Modo IA futuro:** poderá expor geração controlada mediante configuração expressa, governança, logs e avisos obrigatórios. Esse modo não é o modo inicial do produto.
+
 ## Stack Técnica
 
 O projeto utiliza **Next.js**, **TypeScript**, **Tailwind CSS**, **Supabase** e estrutura inicial preparada para integração com a **OpenAI API**. A arquitetura foi organizada para permitir evolução futura em direção a autenticação multi-tenant, auditoria de gerações, exportação DOCX, versionamento de prompts e recuperação documental.
@@ -47,11 +67,11 @@ Em seguida, acesse `http://localhost:3000`.
 
 ## Banco de Dados
 
-O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, logs de geração por IA, normas municipais e checklists.
+O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, solicitações assistidas em `document_requests`, logs de geração por IA, normas municipais e checklists.
 
 ## Segurança e Governança
 
-A aplicação deve operar com separação entre chaves públicas e privadas, Row Level Security no Supabase, logs de uso de IA, versionamento de prompts e registro do usuário responsável por cada geração. Nenhuma funcionalidade deve presumir validade jurídica automática do conteúdo gerado.
+A aplicação deve operar com separação entre chaves públicas e privadas, Row Level Security no Supabase, logs de uso de IA quando o modo futuro for habilitado, versionamento de prompts e registro do usuário responsável por cada solicitação ou produção. Nenhuma funcionalidade deve presumir validade jurídica automática do conteúdo produzido.
 
 ## Exportação DOCX
 

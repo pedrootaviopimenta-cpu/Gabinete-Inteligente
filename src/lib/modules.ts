@@ -19,7 +19,7 @@ export type GiModule = {
 };
 
 export const HUMAN_REVIEW_NOTICE =
-  "Minuta gerada com apoio de inteligência artificial. Revisão humana obrigatória por profissional ou autoridade competente antes de qualquer uso oficial, assinatura, protocolo, publicação ou encaminhamento.";
+  "Minuta ou documento produzido com apoio do Gabinete Inteligente. Revisão humana obrigatória por profissional ou autoridade competente antes de qualquer uso oficial, assinatura, protocolo, publicação ou encaminhamento.";
 
 export const modules: GiModule[] = [
   {
@@ -29,7 +29,7 @@ export const modules: GiModule[] = [
     area: "Comunicação administrativa",
     href: "/oficios",
     description:
-      "Criação assistida de ofícios, encaminhamentos, solicitações e respostas formais para rotinas municipais.",
+      "Solicitação estruturada de apoio para ofícios, encaminhamentos, solicitações e respostas formais em rotinas municipais.",
     promptFile: "oficio_administrativo.md",
     accent: "bg-gi-teal"
   },
@@ -51,7 +51,7 @@ export const modules: GiModule[] = [
     area: "Análise preliminar",
     href: "/pareceres",
     description:
-      "Elaboração de pareceres administrativos preliminares, notas técnicas iniciais e análises de cautela documental.",
+      "Solicitação de apoio para pareceres administrativos preliminares, notas técnicas iniciais e análises de cautela documental.",
     promptFile: "parecer_preliminar.md",
     accent: "bg-gi-amber"
   },
@@ -73,7 +73,7 @@ export const modules: GiModule[] = [
     area: "Conformidade operacional",
     href: "/checklists",
     description:
-      "Criação de checklists administrativos para rotinas municipais, validações internas e conferência documental.",
+      "Solicitação de checklists administrativos para rotinas municipais, validações internas e conferência documental.",
     promptFile: "checklist_administrativo.md",
     accent: "bg-blue-700"
   }

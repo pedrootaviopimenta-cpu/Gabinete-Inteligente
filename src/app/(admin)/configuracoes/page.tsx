@@ -1,11 +1,27 @@
 import { CircleAlert, CircleCheck, KeyRound } from "lucide-react";
 import { HumanReviewNotice } from "@/components/human-review-notice";
+import { getWorkspaceRuntimeConfig } from "@/lib/runtime-config";
 
 const variables = [
   {
+    name: "GI_DELIVERY_MODE",
+    scope: "Servidor",
+    description: "Define o modo de entrega do produto. O modo inicial recomendado é assisted."
+  },
+  {
+    name: "GI_AI_ENABLED",
+    scope: "Servidor",
+    description: "Habilita ou desabilita geração automática por IA para o cliente."
+  },
+  {
+    name: "GI_ADMIN_AI_ENABLED",
+    scope: "Servidor",
+    description: "Reserva futura para recursos de IA em área administrativa."
+  },
+  {
     name: "OPENAI_API_KEY",
     scope: "Servidor",
-    description: "Habilita geração real de minutas pela OpenAI API."
+    description: "Chave server-side preservada para modos híbrido ou IA em etapa futura."
   },
   {
     name: "OPENAI_MODEL",
@@ -35,7 +51,7 @@ const variables = [
 ];
 
 export default function ConfiguracoesPage() {
-  const openAiConfigured = Boolean(process.env.OPENAI_API_KEY);
+  const runtimeConfig = getWorkspaceRuntimeConfig();
 
   return (
     <main className="space-y-6">
@@ -63,19 +79,26 @@ export default function ConfiguracoesPage() {
         <h2 className="text-base font-semibold text-gi-ink">Status operacional</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <StatusPanel
-            title="Geração de minutas"
-            configured={openAiConfigured}
-            configuredText="OpenAI API configurada. As minutas podem usar geração real."
-            missingText="Modo demonstração ativo. Sem OPENAI_API_KEY, as minutas são simuladas e identificadas como demonstração."
+            title="Modo de entrega"
+            configured={runtimeConfig.deliveryMode === "assisted"}
+            configuredText="Modo Assistido ativo. O cliente envia solicitações e recebe protocolo interno."
+            missingText="Modo diferente de assisted configurado. Revise as variáveis antes de expor ao cliente."
+          />
+          <StatusPanel
+            title="IA para cliente"
+            configured={!runtimeConfig.clientAiEnabled}
+            configuredText="Geração automática por IA desabilitada para o cliente."
+            missingText="Geração automática por IA habilitada. Use apenas em modo futuro devidamente revisado."
           />
           <StatusPanel
             title="Persistência Supabase"
             configured={
               Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-              Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+              Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) &&
+              Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
             }
-            configuredText="Credenciais públicas do Supabase configuradas."
-            missingText="Supabase ainda não configurado para autenticação e persistência."
+            configuredText="Credenciais públicas e chave server-side do Supabase configuradas."
+            missingText="Sem Supabase completo, o ambiente local usa armazenamento assistido em arquivo ignorado pelo Git."
           />
         </div>
       </section>

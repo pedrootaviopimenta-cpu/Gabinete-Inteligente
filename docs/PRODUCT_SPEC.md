@@ -4,7 +4,7 @@
 
 O Gabinete Inteligente — GI é uma plataforma SaaS de apoio administrativo, documental e jurídico voltada a municípios brasileiros. Seu objetivo é auxiliar equipes públicas na elaboração organizada de minutas, respostas institucionais, ofícios, pareceres preliminares, checklists e estruturas documentais, observados os limites próprios da atuação administrativa e profissional.
 
-O produto não exerce advocacia, não profere decisão administrativa, não substitui análise jurídica individualizada, não substitui controle interno, não substitui parecer técnico e não dispensa a conferência por autoridade competente. Toda saída gerada por inteligência artificial deve conter aviso claro de revisão humana obrigatória.
+O produto não exerce advocacia, não profere decisão administrativa, não substitui análise jurídica individualizada, não substitui controle interno, não substitui parecer técnico e não dispensa a conferência por autoridade competente. Toda saída documental deve preservar aviso claro de revisão humana obrigatória.
 
 ## 2. Público-Alvo
 
@@ -24,7 +24,21 @@ O GI pretende organizar fluxos de elaboração e revisão, reduzindo a fragmenta
 
 ## 4. Proposta de Valor
 
-O sistema oferece ambiente único para produção assistida de minutas administrativas, respostas institucionais e análises preliminares, com prompts controlados, rastreabilidade, linguagem institucional, módulos especializados e base preparada para consulta normativa municipal.
+O sistema oferece ambiente único para solicitação e produção assistida de minutas administrativas, respostas institucionais e análises preliminares, com campos estruturados, rastreabilidade, linguagem institucional, módulos especializados e base preparada para consulta normativa municipal.
+
+## 4.1 Modo Assistido
+
+O modo inicial do produto é o **Modo Assistido**. O cliente preenche formulários estruturados, informa dados de contato institucional, prioridade e título administrativo da demanda. O sistema registra a solicitação em `document_requests`, preserva os dados estruturados, gera protocolo interno e permite acompanhamento por status.
+
+Nesse modo, o cliente não aciona geração automática por IA. A produção documental ocorre por análise humana, com possibilidade de notas internas, alteração de status, registro de texto final e marcação de conclusão pela equipe responsável.
+
+Os status operacionais do fluxo assistido são: recebido, em análise, aguardando documentos, em produção, em revisão, concluído e cancelado.
+
+## 4.2 Modos Futuros
+
+O **Modo Híbrido** poderá permitir apoio de IA em ambiente interno, sem exposição direta ao cliente, com logs, validação humana e controle de acesso.
+
+O **Modo IA** poderá permitir geração automática controlada, apenas se expressamente habilitado por configuração, governança e revisão humana obrigatória.
 
 ## 5. Princípios Funcionais
 
@@ -34,7 +48,7 @@ Toda minuta gerada deve conter aviso explícito de revisão humana. O sistema de
 
 ### 5.2 Rastreabilidade
 
-Cada geração deve registrar usuário, organização, módulo, prompt utilizado, modelo configurado, horário, parâmetros relevantes e eventual documento resultante.
+Cada solicitação deve registrar solicitante, unidade, módulo, prioridade, campos estruturados, contexto, protocolo, status e eventual documento final. Em modos futuros com IA, cada geração também deve registrar prompt, modelo, parâmetros relevantes e documento resultante.
 
 ### 5.3 Modularidade
 
