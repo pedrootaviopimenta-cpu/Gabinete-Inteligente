@@ -46,7 +46,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação principal">
             <NavLink href="/dashboard" icon={LayoutDashboard} label="Painel" pathname={pathname} />
             <NavLink
-              href="/solicitacoes"
+              href="/admin/solicitacoes"
               icon={ClipboardList}
               label="Solicitações"
               pathname={pathname}
@@ -89,7 +89,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
         <div className="border-b border-gi-line bg-gi-navy px-4 py-3 lg:hidden">
           <div className="flex gap-2 overflow-x-auto" aria-label="Navegação compacta">
             <MobileLink href="/dashboard" label="Painel" pathname={pathname} />
-            <MobileLink href="/solicitacoes" label="Solicitações" pathname={pathname} />
+            <MobileLink href="/admin/solicitacoes" label="Solicitações" pathname={pathname} />
             {modules.map((module) => (
               <MobileLink
                 key={module.slug}

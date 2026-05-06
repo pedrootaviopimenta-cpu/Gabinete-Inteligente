@@ -1,11 +1,5 @@
-import { DocumentRequestsAdmin } from "@/components/document-requests-admin";
-import { HumanReviewNotice } from "@/components/human-review-notice";
+import { redirect } from "next/navigation";
 
 export default function SolicitacoesPage() {
-  return (
-    <div className="space-y-6">
-      <HumanReviewNotice />
-      <DocumentRequestsAdmin />
-    </div>
-  );
+  redirect("/admin/solicitacoes");
 }
