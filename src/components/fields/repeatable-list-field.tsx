@@ -37,7 +37,7 @@ export function RepeatableListField({ field, value, error, onChange }: Repeatabl
         <button
           type="button"
           onClick={addItem}
-          className="inline-flex h-9 items-center gap-2 rounded-md border border-gi-line px-3 text-sm font-medium text-gi-ink transition hover:bg-slate-100"
+          className="gi-button-secondary h-9 px-3"
         >
           <Plus className="h-4 w-4" aria-hidden={true} />
           {field.addLabel || "Adicionar item"}
@@ -52,13 +52,13 @@ export function RepeatableListField({ field, value, error, onChange }: Repeatabl
               placeholder={field.placeholder || `Item ${index + 1}`}
               aria-invalid={Boolean(error)}
               onChange={(event) => updateItem(index, event.target.value)}
-              className="min-w-0 flex-1 rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition placeholder:text-slate-400 focus:border-gi-teal focus:ring-2 focus:ring-teal-100 aria-[invalid=true]:border-gi-rose aria-[invalid=true]:ring-rose-100"
+              className="gi-input mt-0 min-w-0 flex-1"
             />
             <button
               type="button"
               title="Remover item"
               onClick={() => removeItem(index)}
-              className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-md border border-gi-line text-gi-muted transition hover:bg-slate-100 hover:text-gi-rose"
+              className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-md border border-gi-line bg-white text-gi-muted transition hover:border-gi-rose hover:bg-rose-50 hover:text-gi-rose focus:outline-none focus:ring-2 focus:ring-gi-gold focus:ring-offset-2"
             >
               <Trash2 className="h-4 w-4" aria-hidden={true} />
             </button>

@@ -230,10 +230,10 @@ export function StructuredDocumentWorkspace({
 
   return (
     <main className="space-y-6">
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+            <p className="gi-eyebrow">
               {module.area}
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-gi-ink">{module.name}</h1>
@@ -241,7 +241,7 @@ export function StructuredDocumentWorkspace({
               {module.description}
             </p>
           </div>
-          <div className="rounded-md border border-gi-line px-3 py-2 text-xs font-medium text-gi-muted">
+          <div className="rounded-md border border-gi-gold/35 bg-gi-gold/10 px-3 py-2 text-xs font-semibold text-gi-navy">
             {usesAssistedFlow
               ? "Modo Assistido: análise e produção humana"
               : `Prompt versionado: ${module.promptFile}`}
@@ -259,7 +259,7 @@ export function StructuredDocumentWorkspace({
             void (usesAssistedFlow ? submitAssistedRequest() : generateDraft());
           }}
         >
-          <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+          <section className="gi-panel p-5">
             <h2 className="text-base font-semibold text-gi-ink">{form.title}</h2>
             <p className="mt-2 text-sm leading-6 text-gi-muted">
               {usesAssistedFlow
@@ -269,8 +269,8 @@ export function StructuredDocumentWorkspace({
           </section>
 
           {usesAssistedFlow ? (
-            <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gi-ink">
+            <section className="gi-panel p-5">
+              <h3 className="border-l-4 border-gi-gold pl-3 text-sm font-semibold uppercase tracking-wide text-gi-ink">
                 Dados da solicitação
               </h3>
               <p className="mt-2 text-sm leading-6 text-gi-muted">
@@ -356,9 +356,9 @@ export function StructuredDocumentWorkspace({
           {form.sections.map((section) => (
             <section
               key={section.title}
-              className="rounded-lg border border-gi-line bg-white p-5 shadow-panel"
+              className="gi-panel p-5"
             >
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gi-ink">
+              <h3 className="border-l-4 border-gi-gold pl-3 text-sm font-semibold uppercase tracking-wide text-gi-ink">
                 {section.title}
               </h3>
               {section.description ? (
@@ -383,11 +383,11 @@ export function StructuredDocumentWorkspace({
             </p>
           ) : null}
 
-          <div className="flex flex-wrap gap-3 rounded-lg border border-gi-line bg-white p-4 shadow-panel">
+          <div className="gi-panel flex flex-wrap gap-3 p-4">
             <button
               type="submit"
               disabled={status === "loading"}
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-gi-navy px-4 text-sm font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-60"
+              className={usesAssistedFlow ? "gi-button-assisted" : "gi-button-primary"}
             >
               {usesAssistedFlow ? (
                 <Send className="h-4 w-4" aria-hidden={true} />
@@ -405,7 +405,7 @@ export function StructuredDocumentWorkspace({
             <button
               type="button"
               onClick={clearForm}
-              className="inline-flex h-10 items-center gap-2 rounded-md border border-gi-line px-4 text-sm font-semibold text-gi-ink transition hover:bg-slate-100"
+              className="gi-button-secondary"
             >
               <Eraser className="h-4 w-4" aria-hidden={true} />
               Limpar formulário
@@ -414,7 +414,8 @@ export function StructuredDocumentWorkspace({
         </form>
 
         {usesAssistedFlow ? (
-          <aside className="rounded-lg border border-gi-line bg-white p-5 shadow-panel xl:sticky xl:top-24 xl:self-start">
+          <aside className="gi-panel overflow-hidden xl:sticky xl:top-24 xl:self-start">
+            <div className="border-t-4 border-gi-gold p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-gi-ink">
@@ -433,22 +434,22 @@ export function StructuredDocumentWorkspace({
                   )
                 }
                 title="Copiar contexto estruturado"
-                className="inline-flex h-9 items-center gap-2 rounded-md border border-gi-line px-3 text-sm font-medium text-gi-ink transition hover:bg-slate-100"
+                className="gi-button-secondary h-9 px-3"
               >
                 <Copy className="h-4 w-4" aria-hidden={true} />
                 Copiar
               </button>
             </div>
 
-            <p className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm leading-6 text-blue-900">
+            <p className="mt-4 rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
               Modo Assistido ativo: a plataforma registra a solicitação, gera protocolo interno
               e não realiza geração automática de documento para o cliente.
             </p>
 
             {confirmation ? (
-              <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-4 text-sm leading-6 text-teal-950">
+              <div className="mt-4 rounded-md border border-gi-gold/35 bg-white p-4 text-sm leading-6 text-gi-ink shadow-sm">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none text-gi-teal" aria-hidden={true} />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-none text-gi-gold" aria-hidden={true} />
                   <div>
                     <h3 className="font-semibold">Solicitação recebida</h3>
                     <p className="mt-1">
@@ -465,17 +466,19 @@ export function StructuredDocumentWorkspace({
             ) : null}
 
             {copyMessage ? (
-              <p className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm leading-6 text-teal-900">
+              <p className="mt-4 rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
                 {copyMessage}
               </p>
             ) : null}
 
-            <div className="mt-4 min-h-96 whitespace-pre-wrap rounded-md border border-gi-line bg-slate-50 p-4 text-sm leading-6 text-gi-ink">
+            <div className="mt-4 min-h-96 whitespace-pre-wrap rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-ink">
               {structuredContext}
+            </div>
             </div>
           </aside>
         ) : (
-          <aside className="rounded-lg border border-gi-line bg-white p-5 shadow-panel xl:sticky xl:top-24 xl:self-start">
+          <aside className="gi-panel overflow-hidden xl:sticky xl:top-24 xl:self-start">
+            <div className="border-t-4 border-gi-gold p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-gi-ink">Pré-visualização da minuta</h2>
@@ -489,7 +492,7 @@ export function StructuredDocumentWorkspace({
                   onClick={() => void copyText(draft, "Minuta copiada para a área de transferência.")}
                   disabled={!draft}
                   title="Copiar minuta"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gi-line text-gi-ink transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gi-line bg-white text-gi-ink transition hover:border-gi-gold hover:bg-gi-gold/10 disabled:cursor-not-allowed disabled:opacity-50 gi-focus-ring"
                 >
                   <Copy className="h-4 w-4" aria-hidden={true} />
                 </button>
@@ -497,7 +500,7 @@ export function StructuredDocumentWorkspace({
                   type="button"
                   disabled
                   title="Exportação DOCX prevista para fase futura"
-                  className="inline-flex h-9 items-center gap-2 rounded-md border border-gi-line px-3 text-sm font-medium text-gi-muted opacity-70"
+                  className="inline-flex h-9 items-center gap-2 rounded-md border border-gi-line bg-white px-3 text-sm font-medium text-gi-muted opacity-70"
                 >
                   <FileDown className="h-4 w-4" aria-hidden={true} />
                   DOCX em fase futura
@@ -506,21 +509,22 @@ export function StructuredDocumentWorkspace({
             </div>
 
             {isDemo ? (
-              <p className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm leading-6 text-blue-900">
+              <p className="mt-4 rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
                 Modo demonstração ativo: a minuta abaixo foi simulada porque a variável
                 OPENAI_API_KEY não está configurada. Use-a apenas para testar o fluxo visual.
               </p>
             ) : null}
 
             {copyMessage ? (
-              <p className="mt-4 rounded-md border border-teal-200 bg-teal-50 p-3 text-sm leading-6 text-teal-900">
+              <p className="mt-4 rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
                 {copyMessage}
               </p>
             ) : null}
 
-            <div className="mt-4 min-h-96 whitespace-pre-wrap rounded-md border border-gi-line bg-slate-50 p-4 text-sm leading-6 text-gi-ink">
+            <div className="mt-4 min-h-96 whitespace-pre-wrap rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-ink">
               {draft ||
                 "A minuta gerada aparecerá neste painel. Sem chave OpenAI, o sistema produzirá uma minuta demonstrativa claramente identificada."}
+            </div>
             </div>
           </aside>
         )}

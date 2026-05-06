@@ -31,7 +31,7 @@ export const modules: GiModule[] = [
     description:
       "Solicitação estruturada de apoio para ofícios, encaminhamentos, solicitações e respostas formais em rotinas municipais.",
     promptFile: "oficio_administrativo.md",
-    accent: "bg-gi-teal"
+    accent: "bg-gi-gold"
   },
   {
     slug: "ministerio-publico",
@@ -42,7 +42,7 @@ export const modules: GiModule[] = [
     description:
       "Apoio a respostas administrativas para requisições, recomendações e notificações do Ministério Público.",
     promptFile: "resposta_mp.md",
-    accent: "bg-gi-rose"
+    accent: "bg-gi-gold"
   },
   {
     slug: "pareceres",
@@ -53,7 +53,7 @@ export const modules: GiModule[] = [
     description:
       "Solicitação de apoio para pareceres administrativos preliminares, notas técnicas iniciais e análises de cautela documental.",
     promptFile: "parecer_preliminar.md",
-    accent: "bg-gi-amber"
+    accent: "bg-gi-gold"
   },
   {
     slug: "normas-municipais",
@@ -64,7 +64,7 @@ export const modules: GiModule[] = [
     description:
       "Cadastro e análise preliminar de leis, decretos, portarias e demais atos normativos municipais.",
     promptFile: "norma_municipal.md",
-    accent: "bg-slate-500"
+    accent: "bg-gi-gold"
   },
   {
     slug: "checklists",
@@ -75,7 +75,7 @@ export const modules: GiModule[] = [
     description:
       "Solicitação de checklists administrativos para rotinas municipais, validações internas e conferência documental.",
     promptFile: "checklist_administrativo.md",
-    accent: "bg-blue-700"
+    accent: "bg-gi-gold"
   }
 ];
 

@@ -23,7 +23,7 @@ export function DateField({ field, value, error, onChange }: DateFieldProps) {
         value={value}
         aria-invalid={Boolean(error)}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100 aria-[invalid=true]:border-gi-rose aria-[invalid=true]:ring-rose-100"
+        className="gi-input"
       />
       {error ? <p className="mt-1 text-xs font-medium text-gi-rose">{error}</p> : null}
     </div>

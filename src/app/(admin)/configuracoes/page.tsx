@@ -55,13 +55,13 @@ export default function ConfiguracoesPage() {
 
   return (
     <main className="space-y-6">
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gi-navy text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-gi-gold/30 bg-gi-gold/10 text-gi-navy">
             <KeyRound className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+            <p className="gi-eyebrow">
               Ambiente e segurança
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-gi-ink">Configurações</h1>
@@ -75,7 +75,7 @@ export default function ConfiguracoesPage() {
 
       <HumanReviewNotice />
 
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <h2 className="text-base font-semibold text-gi-ink">Status operacional</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <StatusPanel
@@ -103,10 +103,10 @@ export default function ConfiguracoesPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <h2 className="text-base font-semibold text-gi-ink">Variáveis de ambiente</h2>
         <div className="mt-4 overflow-hidden rounded-lg border border-gi-line">
-          <div className="hidden bg-slate-100 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gi-muted sm:grid sm:grid-cols-[1.1fr_0.7fr_0.7fr]">
+          <div className="hidden bg-gi-navy px-4 py-3 text-xs font-semibold uppercase tracking-wide text-white sm:grid sm:grid-cols-[1.1fr_0.7fr_0.7fr]">
             <span>Variável</span>
             <span>Escopo</span>
             <span>Status</span>
@@ -130,7 +130,7 @@ export default function ConfiguracoesPage() {
                 <span
                   className={
                     configured
-                      ? "font-medium text-gi-teal"
+                       ? "font-medium text-gi-navy"
                       : "font-medium text-gi-amber"
                   }
                 >
@@ -157,10 +157,10 @@ function StatusPanel({ title, configured, configuredText, missingText }: StatusP
   const Icon = configured ? CircleCheck : CircleAlert;
 
   return (
-    <div className="rounded-lg border border-gi-line p-4">
+    <div className="rounded-lg border border-gi-line bg-white p-4">
       <div className="flex items-start gap-3">
         <Icon
-          className={configured ? "mt-0.5 h-5 w-5 text-gi-teal" : "mt-0.5 h-5 w-5 text-gi-amber"}
+          className={configured ? "mt-0.5 h-5 w-5 text-gi-gold" : "mt-0.5 h-5 w-5 text-gi-amber"}
           aria-hidden="true"
         />
         <div>

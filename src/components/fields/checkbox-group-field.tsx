@@ -28,13 +28,13 @@ export function CheckboxGroupField({ field, value, error, onChange }: CheckboxGr
         {field.options.map((option) => (
           <label
             key={option.value}
-            className="flex min-h-10 items-center gap-3 rounded-md border border-gi-line bg-white px-3 py-2 text-sm text-gi-ink"
+            className="flex min-h-10 items-center gap-3 rounded-md border border-gi-line bg-white px-3 py-2 text-sm text-gi-ink transition focus-within:border-gi-gold focus-within:ring-2 focus-within:ring-gi-gold/20"
           >
             <input
               type="checkbox"
               checked={value.includes(option.value)}
               onChange={() => toggle(option.value)}
-              className="h-4 w-4 rounded border-gi-line text-gi-teal focus:ring-gi-teal"
+              className="h-4 w-4 rounded border-gi-line text-gi-gold focus:ring-gi-gold"
             />
             <span>{option.label}</span>
           </label>

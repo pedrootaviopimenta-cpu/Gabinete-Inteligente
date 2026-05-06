@@ -9,9 +9,11 @@ export default function NormasMunicipaisPage() {
     <div className="space-y-6">
       <DocumentWorkspace module={module} />
 
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <div className="flex items-start gap-3">
-          <BookMarked className="mt-1 h-5 w-5 text-gi-teal" aria-hidden="true" />
+          <div className="flex h-10 w-10 flex-none items-center justify-center rounded-md border border-gi-gold/30 bg-gi-gold/10 text-gi-navy">
+            <BookMarked className="h-5 w-5" aria-hidden="true" />
+          </div>
           <div>
             <h2 className="text-base font-semibold text-gi-ink">Catalogação normativa</h2>
             <p className="mt-2 text-sm leading-6 text-gi-muted">

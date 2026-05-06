@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { Route } from "next";
+import { usePathname } from "next/navigation";
 import {
   Building2,
   ClipboardList,
@@ -22,25 +25,32 @@ const icons = {
 };
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
+  const pathname = usePathname();
+
   return (
-    <div className="min-h-screen bg-gi-paper">
-      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-gi-line bg-white lg:block">
+    <div className="min-h-screen bg-gi-background">
+      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-white/10 bg-gi-navy text-gi-white shadow-premium lg:block">
         <div className="flex h-full flex-col">
-          <div className="border-b border-gi-line px-6 py-5">
+          <div className="border-b border-white/10 px-6 py-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gi-navy text-white">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-gi-gold/40 bg-white/10 text-gi-gold">
                 <Building2 className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gi-ink">Gabinete Inteligente</p>
-                <p className="text-xs text-gi-muted">GI Municipal</p>
+                <p className="text-sm font-semibold text-gi-white">Gabinete Inteligente</p>
+                <p className="text-xs font-medium text-gi-gold">GI Municipal</p>
               </div>
             </div>
           </div>
 
           <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação principal">
-            <NavLink href="/dashboard" icon={LayoutDashboard} label="Painel" />
-            <NavLink href="/solicitacoes" icon={ClipboardList} label="Solicitações" />
+            <NavLink href="/dashboard" icon={LayoutDashboard} label="Painel" pathname={pathname} />
+            <NavLink
+              href="/solicitacoes"
+              icon={ClipboardList}
+              label="Solicitações"
+              pathname={pathname}
+            />
             {modules.map((module) => {
               const Icon = icons[module.slug];
 
@@ -50,34 +60,45 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
                   href={module.href}
                   icon={Icon}
                   label={module.shortName}
+                  pathname={pathname}
                 />
               );
             })}
-            <NavLink href="/configuracoes" icon={Settings} label="Configurações" />
+            <NavLink
+              href="/configuracoes"
+              icon={Settings}
+              label="Configurações"
+              pathname={pathname}
+            />
           </nav>
         </div>
       </aside>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-gi-line bg-white/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+        <header className="sticky top-0 z-20 border-b border-gi-line bg-white/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-1 border-l-4 border-gi-gold pl-4">
+            <p className="gi-eyebrow">
               Plataforma de apoio institucional
             </p>
             <p className="text-sm text-gi-muted">
-              Minutas, normas e checklists com revisão humana obrigatória.
+              Produção documental assistida, governança e revisão humana obrigatória.
             </p>
           </div>
         </header>
 
-        <div className="border-b border-gi-line bg-white px-4 py-3 lg:hidden">
+        <div className="border-b border-gi-line bg-gi-navy px-4 py-3 lg:hidden">
           <div className="flex gap-2 overflow-x-auto" aria-label="Navegação compacta">
-            <MobileLink href="/dashboard" label="Painel" />
-            <MobileLink href="/solicitacoes" label="Solicitações" />
+            <MobileLink href="/dashboard" label="Painel" pathname={pathname} />
+            <MobileLink href="/solicitacoes" label="Solicitações" pathname={pathname} />
             {modules.map((module) => (
-              <MobileLink key={module.slug} href={module.href} label={module.shortName} />
+              <MobileLink
+                key={module.slug}
+                href={module.href}
+                label={module.shortName}
+                pathname={pathname}
+              />
             ))}
-            <MobileLink href="/configuracoes" label="Configurações" />
+            <MobileLink href="/configuracoes" label="Configurações" pathname={pathname} />
           </div>
         </div>
 
@@ -91,25 +112,41 @@ type NavLinkProps = {
   href: Route;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   label: string;
+  pathname: string;
 };
 
-function NavLink({ href, icon: Icon, label }: NavLinkProps) {
+function NavLink({ href, icon: Icon, label, pathname }: NavLinkProps) {
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+
   return (
     <Link
       href={href}
-      className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-gi-ink transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-gi-teal"
+      className={`group flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition gi-focus-ring ${
+        isActive
+          ? "bg-gi-gold text-gi-navy shadow-sm"
+          : "text-white/78 hover:bg-white/10 hover:text-gi-white"
+      }`}
     >
-      <Icon className="h-4 w-4 text-gi-muted" aria-hidden={true} />
+      <Icon
+        className={`h-4 w-4 ${isActive ? "text-gi-navy" : "text-gi-gold/85 group-hover:text-gi-gold"}`}
+        aria-hidden={true}
+      />
       <span>{label}</span>
     </Link>
   );
 }
 
-function MobileLink({ href, label }: { href: Route; label: string }) {
+function MobileLink({ href, label, pathname }: { href: Route; label: string; pathname: string }) {
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+
   return (
     <Link
       href={href}
-      className="flex h-9 flex-none items-center rounded-md border border-gi-line px-3 text-sm font-medium text-gi-ink"
+      className={`flex h-9 flex-none items-center rounded-md border px-3 text-sm font-medium transition gi-focus-ring ${
+        isActive
+          ? "border-gi-gold bg-gi-gold text-gi-navy"
+          : "border-white/15 bg-white/5 text-white/85"
+      }`}
     >
       {label}
     </Link>

@@ -14,7 +14,7 @@ export function CheckboxField({ field, value, error, onChange }: CheckboxFieldPr
     <div>
       <label
         htmlFor={id}
-        className="flex min-h-11 items-start gap-3 rounded-md border border-gi-line bg-white px-3 py-3 text-sm text-gi-ink"
+        className="flex min-h-11 items-start gap-3 rounded-md border border-gi-line bg-white px-3 py-3 text-sm text-gi-ink transition focus-within:border-gi-gold focus-within:ring-2 focus-within:ring-gi-gold/20"
       >
         <input
           id={id}
@@ -22,7 +22,7 @@ export function CheckboxField({ field, value, error, onChange }: CheckboxFieldPr
           checked={value}
           aria-invalid={Boolean(error)}
           onChange={(event) => onChange(event.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-gi-line text-gi-teal focus:ring-gi-teal"
+          className="mt-1 h-4 w-4 rounded border-gi-line text-gi-gold focus:ring-gi-gold"
         />
         <span>
           <span className="font-medium">

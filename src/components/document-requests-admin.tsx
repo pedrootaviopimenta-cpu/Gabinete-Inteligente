@@ -33,6 +33,16 @@ const emptyFilters: Filters = {
   priority: ""
 };
 
+const statusBadgeClasses: Record<DocumentRequestStatus, string> = {
+  recebido: "border-gi-gold/35 bg-gi-gold/10 text-gi-navy",
+  em_analise: "border-gi-navy/20 bg-gi-navy/5 text-gi-navy",
+  aguardando_documentos: "border-amber-200 bg-amber-50 text-amber-900",
+  em_producao: "border-gi-gold/45 bg-gi-gold/15 text-gi-navy",
+  em_revisao: "border-gi-line bg-gi-background text-gi-ink",
+  concluido: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  cancelado: "border-rose-200 bg-rose-50 text-rose-900"
+};
+
 export function DocumentRequestsAdmin() {
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -137,10 +147,10 @@ export function DocumentRequestsAdmin() {
 
   return (
     <main className="space-y-6">
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+            <p className="gi-eyebrow">
               Operação assistida
             </p>
             <h1 className="mt-2 text-2xl font-semibold text-gi-ink">
@@ -154,7 +164,7 @@ export function DocumentRequestsAdmin() {
           <button
             type="button"
             onClick={() => void loadRequests()}
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-gi-line px-4 text-sm font-semibold text-gi-ink transition hover:bg-slate-100"
+            className="gi-button-secondary"
           >
             <RefreshCw className="h-4 w-4" aria-hidden={true} />
             Atualizar
@@ -162,7 +172,7 @@ export function DocumentRequestsAdmin() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+      <section className="gi-panel p-5">
         <div className="flex items-center gap-2">
           <Search className="h-4 w-4 text-gi-muted" aria-hidden={true} />
           <h2 className="text-base font-semibold text-gi-ink">Filtros</h2>
@@ -203,13 +213,13 @@ export function DocumentRequestsAdmin() {
       </section>
 
       {statusMessage ? (
-        <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm leading-6 text-teal-900">
+        <p className="rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
           {statusMessage}
         </p>
       ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)]">
-        <div className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <div className="gi-panel p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-gi-ink">Fila de solicitações</h2>
             <span className="rounded-md border border-gi-line px-2 py-1 text-xs font-medium text-gi-muted">
@@ -223,7 +233,7 @@ export function DocumentRequestsAdmin() {
             ) : null}
 
             {!isLoading && !filteredRequests.length ? (
-              <p className="rounded-md border border-gi-line bg-slate-50 p-4 text-sm leading-6 text-gi-muted">
+              <p className="rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-muted">
                 Nenhuma solicitação encontrada para os filtros selecionados.
               </p>
             ) : null}
@@ -239,15 +249,15 @@ export function DocumentRequestsAdmin() {
                   onClick={() => setSelectedId(request.id)}
                   className={`block w-full rounded-md border p-4 text-left transition ${
                     isSelected
-                      ? "border-gi-teal bg-teal-50"
-                      : "border-gi-line bg-white hover:bg-slate-50"
+                      ? "border-gi-gold bg-gi-gold/10"
+                      : "border-gi-line bg-white hover:border-gi-gold/60 hover:bg-gi-gold/5"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gi-gold">
                       {request.protocol_number}
                     </span>
-                    <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-gi-muted">
+                    <span className={`rounded-md border px-2 py-1 text-xs font-medium ${statusBadgeClasses[request.status]}`}>
                       {documentRequestStatusLabels[request.status]}
                     </span>
                   </div>
@@ -262,12 +272,12 @@ export function DocumentRequestsAdmin() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gi-line bg-white p-5 shadow-panel">
+        <div className="gi-panel p-5">
           {selectedRequest && editValues ? (
             <div className="space-y-6">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gi-teal">
+                  <p className="gi-eyebrow">
                     {selectedRequest.protocol_number}
                   </p>
                   <h2 className="mt-2 text-xl font-semibold text-gi-ink">
@@ -282,7 +292,7 @@ export function DocumentRequestsAdmin() {
                   type="button"
                   onClick={() => void saveSelectedRequest("concluido")}
                   disabled={isSaving}
-                  className="inline-flex h-10 items-center gap-2 rounded-md bg-gi-teal px-4 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="gi-button-assisted"
                 >
                   <SquareCheckBig className="h-4 w-4" aria-hidden={true} />
                   Marcar como concluído
@@ -315,7 +325,7 @@ export function DocumentRequestsAdmin() {
                             : current
                         )
                       }
-                      className="mt-2 w-full rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100"
+                      className="gi-input"
                     >
                       {documentRequestStatuses.map((status) => (
                         <option key={status} value={status}>
@@ -333,7 +343,7 @@ export function DocumentRequestsAdmin() {
                           current ? { ...current, final_document_url: event.target.value } : current
                         )
                       }
-                      className="mt-2 w-full rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100"
+                      className="gi-input"
                       placeholder="Link interno ou futuro arquivo DOCX"
                     />
                   </label>
@@ -348,7 +358,7 @@ export function DocumentRequestsAdmin() {
                       )
                     }
                     rows={5}
-                    className="mt-2 w-full resize-y rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100"
+                    className="gi-input resize-y"
                     placeholder="Registre cautelas, pendências, documentos faltantes e encaminhamentos internos."
                   />
                 </label>
@@ -362,7 +372,7 @@ export function DocumentRequestsAdmin() {
                       )
                     }
                     rows={8}
-                    className="mt-2 w-full resize-y rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100"
+                    className="gi-input resize-y"
                     placeholder="Cole ou redija o texto final após análise humana competente."
                   />
                 </label>
@@ -371,7 +381,7 @@ export function DocumentRequestsAdmin() {
                     type="button"
                     onClick={() => void saveSelectedRequest()}
                     disabled={isSaving}
-                    className="inline-flex h-10 items-center gap-2 rounded-md bg-gi-navy px-4 text-sm font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="gi-button-primary"
                   >
                     <Save className="h-4 w-4" aria-hidden={true} />
                     {isSaving ? "Salvando" : "Salvar alterações"}
@@ -379,7 +389,7 @@ export function DocumentRequestsAdmin() {
                   <button
                     type="button"
                     onClick={() => void copyContext()}
-                    className="inline-flex h-10 items-center gap-2 rounded-md border border-gi-line px-4 text-sm font-semibold text-gi-ink transition hover:bg-slate-100"
+                    className="gi-button-secondary"
                   >
                     <ClipboardCopy className="h-4 w-4" aria-hidden={true} />
                     Copiar contexto
@@ -398,13 +408,13 @@ export function DocumentRequestsAdmin() {
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-gi-ink">
                   Contexto estruturado
                 </h3>
-                <div className="mt-3 min-h-72 whitespace-pre-wrap rounded-md border border-gi-line bg-slate-50 p-4 text-sm leading-6 text-gi-ink">
+                <div className="mt-3 min-h-72 whitespace-pre-wrap rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-ink">
                   {selectedRequest.structured_context}
                 </div>
               </section>
             </div>
           ) : (
-            <p className="rounded-md border border-gi-line bg-slate-50 p-4 text-sm leading-6 text-gi-muted">
+            <p className="rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-muted">
               Selecione uma solicitação para visualizar detalhes, campos estruturados e
               providências internas.
             </p>
@@ -432,7 +442,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition focus:border-gi-teal focus:ring-2 focus:ring-teal-100"
+        className="gi-input"
       >
         <option value="">Todos</option>
         {options.map((option) => (
@@ -447,7 +457,7 @@ function FilterSelect({
 
 function InfoLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-gi-line bg-slate-50 p-3">
+    <div className="rounded-md border border-gi-line bg-gi-background p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-gi-muted">{label}</p>
       <p className="mt-1 break-words text-sm leading-6 text-gi-ink">{value}</p>
     </div>
@@ -460,8 +470,10 @@ function StructuredFields({ request }: { request: DocumentRequest }) {
   return (
     <div className="mt-3 space-y-4">
       {form.sections.map((section) => (
-        <div key={section.title} className="rounded-md border border-gi-line bg-slate-50 p-4">
-          <h4 className="text-sm font-semibold text-gi-ink">{section.title}</h4>
+        <div key={section.title} className="rounded-md border border-gi-line bg-gi-background p-4">
+          <h4 className="border-l-4 border-gi-gold pl-3 text-sm font-semibold text-gi-ink">
+            {section.title}
+          </h4>
           <dl className="mt-3 grid gap-3 md:grid-cols-2">
             {section.fields.map((field) => (
               <div key={field.name}>

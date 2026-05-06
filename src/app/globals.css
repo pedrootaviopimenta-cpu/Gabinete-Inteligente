@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: light;
-  --background: #f8fafc;
-  --foreground: #1e293b;
+  --background: #f7f8fa;
+  --foreground: #172033;
 }
 
 * {
@@ -19,7 +19,9 @@ html {
 body {
   min-height: 100%;
   margin: 0;
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(201, 162, 39, 0.08), transparent 32rem),
+    linear-gradient(180deg, #ffffff 0%, var(--background) 18rem);
   color: var(--foreground);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -39,6 +41,40 @@ select {
 }
 
 ::selection {
-  background: #ccfbf1;
-  color: #134e4a;
+  background: #e7d28a;
+  color: #0b1f3a;
+}
+
+@layer components {
+  .gi-panel {
+    @apply rounded-lg border border-gi-line bg-gi-white shadow-panel;
+  }
+
+  .gi-panel-header {
+    @apply border-b border-gi-line bg-gradient-to-r from-gi-navy to-gi-navy-light px-5 py-4 text-gi-white;
+  }
+
+  .gi-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wide text-gi-gold;
+  }
+
+  .gi-input {
+    @apply mt-2 w-full rounded-md border border-gi-line bg-gi-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition placeholder:text-slate-400 focus:border-gi-gold focus:ring-2 focus:ring-gi-gold/25 aria-[invalid=true]:border-gi-rose aria-[invalid=true]:ring-rose-100;
+  }
+
+  .gi-button-primary {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gi-navy px-4 text-sm font-semibold text-gi-white shadow-sm transition hover:bg-[#07172C] focus:outline-none focus:ring-2 focus:ring-gi-gold focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .gi-button-assisted {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md bg-gi-gold px-4 text-sm font-semibold text-gi-navy shadow-sm transition hover:bg-[#B8921F] focus:outline-none focus:ring-2 focus:ring-gi-navy focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .gi-button-secondary {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-md border border-gi-line bg-gi-white px-4 text-sm font-semibold text-gi-ink transition hover:border-gi-gold hover:bg-gi-gold/10 focus:outline-none focus:ring-2 focus:ring-gi-gold focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .gi-focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-gi-gold focus:ring-offset-2;
+  }
 }

@@ -24,7 +24,7 @@ export function TextareaField({ field, value, error, onChange }: TextareaFieldPr
         placeholder={field.placeholder}
         aria-invalid={Boolean(error)}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full resize-y rounded-md border border-gi-line bg-white px-3 py-2 text-sm leading-6 text-gi-ink outline-none transition placeholder:text-slate-400 focus:border-gi-teal focus:ring-2 focus:ring-teal-100 aria-[invalid=true]:border-gi-rose aria-[invalid=true]:ring-rose-100"
+        className="gi-input resize-y"
       />
       {error ? <p className="mt-1 text-xs font-medium text-gi-rose">{error}</p> : null}
     </div>
