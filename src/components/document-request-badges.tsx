@@ -1,3 +1,4 @@
+import { LockKeyhole } from "lucide-react";
 import {
   documentRequestPriorityLabels,
   documentRequestStatusLabels,
@@ -7,6 +8,9 @@ import {
 
 export const ADMIN_COMPLETION_NOTICE =
   "A conclusão da solicitação não representa emissão automática de parecer, decisão administrativa ou documento oficial. A entrega final deve ser revisada e validada por profissional ou autoridade competente.";
+
+export const CONFIDENTIAL_CONTENT_NOTICE =
+  "Conteúdo confidencial. Uso restrito a usuários autorizados.";
 
 export const statusBadgeClasses: Record<DocumentRequestStatus, string> = {
   recebido: "border-gi-gold/35 bg-gi-gold/10 text-gi-navy",
@@ -38,5 +42,16 @@ export function PriorityBadge({ priority }: { priority: DocumentRequestPriority 
     <span className={`rounded-md border px-2.5 py-1 text-xs font-semibold ${priorityBadgeClasses[priority]}`}>
       {documentRequestPriorityLabels[priority]}
     </span>
+  );
+}
+
+export function ConfidentialNotice() {
+  return (
+    <section className="rounded-md border border-gi-navy/15 bg-gi-navy/5 p-4 text-sm leading-6 text-gi-ink">
+      <div className="flex items-start gap-3">
+        <LockKeyhole className="mt-0.5 h-4 w-4 flex-none text-gi-gold" aria-hidden={true} />
+        <p>{CONFIDENTIAL_CONTENT_NOTICE}</p>
+      </div>
+    </section>
   );
 }

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import {
   createDocumentRequest,
   listDocumentRequests
@@ -11,8 +10,31 @@ import {
 import { buildStructuredPayload, getFormDefinition, validateForm, type FormValues } from "@/lib/forms";
 import { getModuleBySlug, isModuleSlug, type ModuleSlug } from "@/lib/modules";
 import { getAuthenticatedUser } from "@/lib/auth";
+import {
+  badRequestResponse,
+  hasOnlyAllowedKeys,
+  isPlainRecord,
+  jsonNoStore,
+  logControlledError,
+  readJsonWithLimit,
+  trimToMax,
+  unauthorizedResponse
+} from "@/lib/api-security";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const allowedCreateKeys = [
+  "moduleSlug",
+  "title",
+  "requesterName",
+  "requesterEmail",
+  "requesterPhone",
+  "requesterDepartment",
+  "priority",
+  "fields",
+  "context"
+];
 
 type DocumentRequestPayload = {
   moduleSlug?: string;
@@ -38,13 +60,18 @@ export async function GET(request: Request) {
   const moduleSlug = searchParams.get("moduleSlug") || "";
   const priority = searchParams.get("priority") || "";
 
-  const requests = await listDocumentRequests({
-    status: isDocumentRequestStatus(status) ? status : undefined,
-    moduleSlug: isModuleSlug(moduleSlug) ? moduleSlug : undefined,
-    priority: isDocumentRequestPriority(priority) ? priority : undefined
-  });
+  try {
+    const requests = await listDocumentRequests({
+      status: isDocumentRequestStatus(status) ? status : undefined,
+      moduleSlug: isModuleSlug(moduleSlug) ? moduleSlug : undefined,
+      priority: isDocumentRequestPriority(priority) ? priority : undefined
+    });
 
-  return NextResponse.json({ requests });
+    return jsonNoStore({ requests });
+  } catch (error) {
+    logControlledError("document_requests_list", error);
+    return jsonNoStore({ error: "Não foi possível carregar as solicitações." }, 500);
+  }
 }
 
 export async function POST(request: Request) {
@@ -54,31 +81,40 @@ export async function POST(request: Request) {
     return unauthorizedResponse();
   }
 
-  const body = (await request.json()) as DocumentRequestPayload;
+  const parsedBody = await readJsonWithLimit<DocumentRequestPayload>(request);
+
+  if ("error" in parsedBody) {
+    return badRequestResponse(parsedBody.error);
+  }
+
+  const body = parsedBody.data;
+
+  if (!hasOnlyAllowedKeys(body, allowedCreateKeys)) {
+    return badRequestResponse("Requisição inválida.");
+  }
+
   const validation = validatePayload(body);
 
   if ("error" in validation) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return badRequestResponse(validation.error);
   }
 
-  const documentRequest = await createDocumentRequest(validation.input);
+  try {
+    const documentRequest = await createDocumentRequest(validation.input);
 
-  return NextResponse.json(
-    {
-      request: documentRequest,
-      protocolNumber: documentRequest.protocol_number,
-      message:
-        "Solicitação recebida para produção documental assistida. O protocolo interno foi gerado para acompanhamento administrativo."
-    },
-    { status: 201 }
-  );
-}
-
-function unauthorizedResponse() {
-  return NextResponse.json(
-    { error: "Acesso restrito a usuários autorizados." },
-    { status: 401 }
-  );
+    return jsonNoStore(
+      {
+        request: documentRequest,
+        protocolNumber: documentRequest.protocol_number,
+        message:
+          "Solicitação recebida para produção documental assistida. O protocolo interno foi gerado para acompanhamento administrativo."
+      },
+      201
+    );
+  } catch (error) {
+    logControlledError("document_requests_create", error);
+    return jsonNoStore({ error: "Não foi possível registrar a solicitação." }, 500);
+  }
 }
 
 function validatePayload(body: DocumentRequestPayload):
@@ -89,20 +125,24 @@ function validatePayload(body: DocumentRequestPayload):
   }
 
   const module = getModuleBySlug(body.moduleSlug);
-  const fields = normalizeFields(body.fields || {});
+  const fields = normalizeFields(isPlainRecord(body.fields) ? (body.fields as FormValues) : {});
   const form = getFormDefinition(body.moduleSlug);
   const formErrors = validateForm(form, fields);
-  const requesterEmail = body.requesterEmail?.trim() || "";
+  const requesterEmail = trimToMax(body.requesterEmail, 254);
 
   if (Object.keys(formErrors).length) {
     return { error: "Preencha os campos obrigatórios do formulário antes de enviar." };
   }
 
-  if (!body.title?.trim()) {
+  const title = trimToMax(body.title, 220);
+  const requesterName = trimToMax(body.requesterName, 160);
+  const requesterDepartment = trimToMax(body.requesterDepartment, 180);
+
+  if (!title) {
     return { error: "Informe um título administrativo para a solicitação." };
   }
 
-  if (!body.requesterName?.trim()) {
+  if (!requesterName) {
     return { error: "Informe o nome do solicitante." };
   }
 
@@ -110,7 +150,7 @@ function validatePayload(body: DocumentRequestPayload):
     return { error: "Informe um e-mail válido para o solicitante." };
   }
 
-  if (!body.requesterDepartment?.trim()) {
+  if (!requesterDepartment) {
     return { error: "Informe a secretaria, setor ou unidade solicitante." };
   }
 
@@ -121,14 +161,14 @@ function validatePayload(body: DocumentRequestPayload):
   return {
     input: {
       module_slug: body.moduleSlug,
-      title: body.title.trim() || module.name,
-      requester_name: body.requesterName.trim(),
+      title: title || module.name,
+      requester_name: requesterName,
       requester_email: requesterEmail,
-      requester_phone: body.requesterPhone?.trim() || "",
-      requester_department: body.requesterDepartment.trim(),
+      requester_phone: trimToMax(body.requesterPhone, 60),
+      requester_department: requesterDepartment,
       priority: body.priority,
       structured_fields: fields,
-      structured_context: body.context?.trim() || buildStructuredPayload(form, fields)
+      structured_context: trimToMax(body.context, 30_000) || buildStructuredPayload(form, fields)
     }
   };
 }
@@ -137,14 +177,14 @@ function normalizeFields(fields: FormValues): FormValues {
   return Object.fromEntries(
     Object.entries(fields).map(([key, value]) => {
       if (Array.isArray(value)) {
-        return [key, value.map((item) => String(item || "").trim())];
+        return [key, value.slice(0, 50).map((item) => String(item || "").trim().slice(0, 4_000))];
       }
 
       if (typeof value === "boolean") {
         return [key, value];
       }
 
-      return [key, String(value || "").trim()];
+      return [key, String(value || "").trim().slice(0, 8_000)];
     })
   );
 }

@@ -16,6 +16,7 @@ import {
 import { getModuleBySlug, modules, type ModuleSlug } from "@/lib/modules";
 import {
   ADMIN_COMPLETION_NOTICE,
+  ConfidentialNotice,
   PriorityBadge,
   StatusBadge
 } from "@/components/document-request-badges";
@@ -136,6 +137,8 @@ export function DocumentRequestsAdminList() {
       <section className="rounded-md border border-gi-gold/35 bg-gi-gold/10 p-4 text-sm leading-6 text-gi-ink">
         {ADMIN_COMPLETION_NOTICE}
       </section>
+
+      <ConfidentialNotice />
 
       <section className="gi-panel p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

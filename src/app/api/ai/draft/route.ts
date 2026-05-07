@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
@@ -12,8 +11,22 @@ import {
 } from "@/lib/modules";
 import { getGiDeliveryMode, isClientAiEnabled } from "@/lib/runtime-config";
 import { getAuthenticatedUser } from "@/lib/auth";
+import {
+  badRequestResponse,
+  forbiddenResponse,
+  hasOnlyAllowedKeys,
+  isPlainRecord,
+  jsonNoStore,
+  logControlledError,
+  readJsonWithLimit,
+  trimToMax,
+  unauthorizedResponse
+} from "@/lib/api-security";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const allowedDraftKeys = ["moduleSlug", "fields", "context"];
 
 type DraftRequest = {
   moduleSlug?: string;
@@ -30,7 +43,7 @@ export async function GET() {
 
   const clientAiEnabled = isClientAiEnabled();
 
-  return NextResponse.json({
+  return jsonNoStore({
     status: clientAiEnabled ? "ativo" : "preservado_desabilitado",
     route: "/api/ai/draft",
     generationMethod: "POST",
@@ -57,33 +70,37 @@ export async function POST(request: Request) {
   }
 
   if (!isClientAiEnabled()) {
-    return NextResponse.json(
-      {
-        error:
-          "Geração automática por IA desabilitada no Modo Assistido. Envie a solicitação para produção assistida.",
-        deliveryMode: getGiDeliveryMode(),
-        clientAiEnabled: false
-      },
-      { status: 403 }
-    );
+    return forbiddenResponse("Geração automática por IA indisponível neste ambiente.");
   }
 
-  const body = (await request.json()) as DraftRequest;
+  const parsedBody = await readJsonWithLimit<DraftRequest>(request);
+
+  if ("error" in parsedBody) {
+    return badRequestResponse(parsedBody.error);
+  }
+
+  const body = parsedBody.data;
+
+  if (!hasOnlyAllowedKeys(body, allowedDraftKeys)) {
+    return badRequestResponse("Requisição inválida.");
+  }
+
   const moduleSlug = body.moduleSlug;
 
   if (!moduleSlug || !isModuleSlug(moduleSlug)) {
-    return NextResponse.json(
-      { error: "Módulo inválido para geração de minuta." },
-      { status: 400 }
-    );
+    return badRequestResponse("Módulo inválido para geração de minuta.");
   }
 
   const module = getModuleBySlug(moduleSlug);
-  const fields = normalizeFields(body.fields || {});
-  const context = body.context?.trim() || buildStructuredPayload(getFormDefinition(moduleSlug), fields);
+  const fields = normalizeFields(isPlainRecord(body.fields) ? (body.fields as FormValues) : {});
+  const form = getFormDefinition(moduleSlug);
+  const structuredContext = buildStructuredPayload(form, fields);
+  const context = structuredContext.trim()
+    ? structuredContext
+    : trimToMax(body.context, 30_000);
 
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json({
+    return jsonNoStore({
       draft: ensureHumanReviewNotice(createDemoDraft(moduleSlug, fields, context), HUMAN_REVIEW_NOTICE),
       mode: "demo",
       notice: HUMAN_REVIEW_NOTICE
@@ -91,50 +108,59 @@ export async function POST(request: Request) {
   }
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const [systemPrompt, modulePrompt] = await Promise.all([
-    readPrompt("system.md"),
-    readPrompt(module.promptFile)
-  ]);
+  let systemPrompt: string;
+  let modulePrompt: string;
 
-  const completion = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-    temperature: 0.2,
-    messages: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: [
-          modulePrompt,
-          "",
-          "Dados estruturados fornecidos pelo usuário:",
-          context,
-          "",
-          "Módulo solicitado:",
-          module.name,
-          "",
-          "Exigências permanentes:",
-          "1. Não inventar fatos, documentos, artigos, jurisprudência ou fundamentos não fornecidos.",
-          "2. Não sugerir substituição de advogado, procurador, controlador interno, autoridade administrativa ou servidor responsável.",
-          "3. Manter aviso de revisão humana obrigatória."
-        ].join("\n")
-      }
-    ]
-  });
+  try {
+    [systemPrompt, modulePrompt] = await Promise.all([
+      readPrompt("system.md"),
+      readPrompt(module.promptFile)
+    ]);
+  } catch (error) {
+    logControlledError("ai_prompt_read", error);
+    return jsonNoStore({ error: "Não foi possível preparar a geração neste momento." }, 500);
+  }
+
+  let completion;
+
+  try {
+    completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      temperature: 0.2,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: [
+            modulePrompt,
+            "",
+            "Dados estruturados fornecidos pelo usuário:",
+            context,
+            "",
+            "Módulo solicitado:",
+            module.name,
+            "",
+            "Exigências permanentes:",
+            "1. Não inventar fatos, documentos, artigos, jurisprudência ou fundamentos não fornecidos.",
+            "2. Não sugerir substituição de advogado, procurador, controlador interno, autoridade administrativa ou servidor responsável.",
+            "3. Manter aviso de revisão humana obrigatória.",
+            "4. A IA não substitui análise humana, jurídica, administrativa ou técnica competente."
+          ].join("\n")
+        }
+      ]
+    });
+  } catch (error) {
+    logControlledError("ai_draft_generation", error);
+    return jsonNoStore({ error: "Não foi possível gerar a minuta neste momento." }, 502);
+  }
 
   const content = completion.choices[0]?.message.content?.trim();
 
-  return NextResponse.json({
+  return jsonNoStore({
     draft: ensureHumanReviewNotice(content || "", HUMAN_REVIEW_NOTICE),
     mode: "openai",
     notice: HUMAN_REVIEW_NOTICE
   });
-}
-
-function unauthorizedResponse() {
-  return NextResponse.json(
-    { error: "Acesso restrito a usuários autorizados." },
-    { status: 401 }
-  );
 }
 
 async function readPrompt(fileName: string) {
@@ -158,14 +184,14 @@ function normalizeFields(fields: FormValues): FormValues {
 
 function normalizeValue(value: FormValue): FormValue {
   if (Array.isArray(value)) {
-    return value.map((item) => String(item || "").trim());
+    return value.slice(0, 50).map((item) => String(item || "").trim().slice(0, 4_000));
   }
 
   if (typeof value === "boolean") {
     return value;
   }
 
-  return String(value || "").trim();
+  return String(value || "").trim().slice(0, 8_000);
 }
 
 function text(fields: FormValues, key: string, fallback = "[não informado]") {

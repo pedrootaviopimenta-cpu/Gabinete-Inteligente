@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import {
   AUTH_COOKIE_NAME,
   SESSION_DURATION_SECONDS,
   createSessionToken,
   validateAdminCredentials
 } from "@/lib/auth";
+import { jsonNoStore, readJsonWithLimit } from "@/lib/api-security";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type LoginPayload = {
   username?: string;
@@ -15,19 +15,22 @@ type LoginPayload = {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as LoginPayload;
+  const parsedBody = await readJsonWithLimit<LoginPayload>(request, 10_000);
+
+  if ("error" in parsedBody) {
+    return invalidCredentialsResponse();
+  }
+
+  const body = parsedBody.data;
   const username = body.username?.trim() || "";
   const password = body.password || "";
 
   if (!validateAdminCredentials(username, password)) {
-    return NextResponse.json(
-      { error: "Usuário ou senha inválidos." },
-      { status: 401 }
-    );
+    return invalidCredentialsResponse();
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set(AUTH_COOKIE_NAME, createSessionToken(username), {
+  const response = jsonNoStore({ ok: true });
+  response.cookies.set(AUTH_COOKIE_NAME, createSessionToken(username), {
     httpOnly: true,
     maxAge: SESSION_DURATION_SECONDS,
     path: "/",
@@ -35,5 +38,9 @@ export async function POST(request: Request) {
     secure: process.env.NODE_ENV === "production"
   });
 
-  return NextResponse.json({ ok: true });
+  return response;
+}
+
+function invalidCredentialsResponse() {
+  return jsonNoStore({ error: "Usuário ou senha inválidos." }, 401);
 }

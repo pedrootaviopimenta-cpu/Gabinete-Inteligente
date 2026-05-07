@@ -3,6 +3,9 @@ import { Building2, ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
 import { getAuthenticatedUser } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function LoginPage() {
   const user = await getAuthenticatedUser();
 

@@ -1,12 +1,12 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import { AUTH_COOKIE_NAME } from "@/lib/auth";
+import { jsonNoStore } from "@/lib/api-security";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.set(AUTH_COOKIE_NAME, "", {
+  const response = jsonNoStore({ ok: true });
+  response.cookies.set(AUTH_COOKIE_NAME, "", {
     httpOnly: true,
     maxAge: 0,
     path: "/",
@@ -14,5 +14,5 @@ export async function POST() {
     secure: process.env.NODE_ENV === "production"
   });
 
-  return NextResponse.json({ ok: true });
+  return response;
 }
