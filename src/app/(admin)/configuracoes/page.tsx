@@ -34,6 +34,11 @@ const variables = [
     description: "E-mail auxiliar para futura recuperação de senha e contato administrativo."
   },
   {
+    name: "GI_SESSION_SECRET",
+    scope: "Servidor",
+    description: "Segredo privado usado para assinar a sessão httpOnly. Nunca deve ser versionado."
+  },
+  {
     name: "OPENAI_API_KEY",
     scope: "Servidor",
     description: "Chave server-side preservada para modos híbrido ou IA em etapa futura."
@@ -117,9 +122,13 @@ export default function ConfiguracoesPage() {
           />
           <StatusPanel
             title="Acesso restrito"
-            configured={Boolean(process.env.GI_ADMIN_USERNAME) && Boolean(process.env.GI_ADMIN_PASSWORD)}
-            configuredText="Administrador inicial configurado por usuário e senha em variáveis de ambiente."
-            missingText="Configure GI_ADMIN_USERNAME e GI_ADMIN_PASSWORD antes de usar a plataforma."
+            configured={
+              Boolean(process.env.GI_ADMIN_USERNAME) &&
+              Boolean(process.env.GI_ADMIN_PASSWORD) &&
+              Boolean(process.env.GI_SESSION_SECRET)
+            }
+            configuredText="Administrador sênior inicial e segredo de sessão configurados por variáveis privadas."
+            missingText="Configure GI_ADMIN_USERNAME, GI_ADMIN_PASSWORD e GI_SESSION_SECRET antes de usar a plataforma."
           />
         </div>
       </section>

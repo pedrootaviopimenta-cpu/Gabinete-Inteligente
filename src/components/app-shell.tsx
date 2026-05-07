@@ -27,8 +27,9 @@ const icons = {
 
 export function AppShell({
   children,
-  username
-}: Readonly<{ children: React.ReactNode; username: string }>) {
+  username,
+  role
+}: Readonly<{ children: React.ReactNode; username: string; role: string }>) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -89,6 +90,9 @@ export function AppShell({
                 Usuário autorizado
               </p>
               <p className="mt-1 truncate text-sm text-white/82">{username}</p>
+              <p className="mt-1 text-xs text-white/55">
+                {role === "senior_admin" ? "Administrador sênior" : "Usuário interno"}
+              </p>
             </div>
             <button
               type="button"

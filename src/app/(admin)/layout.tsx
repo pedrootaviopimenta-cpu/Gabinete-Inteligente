@@ -8,5 +8,5 @@ export default async function AdminLayout({
 }>) {
   const user = await requireAuthenticatedUser();
 
-  return <AppShell username={user.username}>{children}</AppShell>;
+  return <AppShell username={user.username} role={user.role}>{children}</AppShell>;
 }

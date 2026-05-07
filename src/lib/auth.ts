@@ -4,15 +4,18 @@ import { redirect } from "next/navigation";
 
 export const AUTH_COOKIE_NAME = "gi_session";
 export const SESSION_DURATION_SECONDS = 8 * 60 * 60;
+export const SENIOR_ADMIN_ROLE = "senior_admin";
 
 type SessionPayload = {
   username: string;
+  role: typeof SENIOR_ADMIN_ROLE;
   issuedAt: number;
   expiresAt: number;
 };
 
 export type AuthenticatedUser = {
   username: string;
+  role: typeof SENIOR_ADMIN_ROLE;
   recoveryEmail: string;
   issuedAt: number;
   expiresAt: number;
@@ -22,19 +25,20 @@ export function getConfiguredAdminUser() {
   return {
     username: process.env.GI_ADMIN_USERNAME?.trim() || "",
     password: process.env.GI_ADMIN_PASSWORD || "",
-    recoveryEmail: process.env.GI_ADMIN_RECOVERY_EMAIL?.trim() || ""
+    recoveryEmail: process.env.GI_ADMIN_RECOVERY_EMAIL?.trim() || "",
+    sessionSecret: process.env.GI_SESSION_SECRET || ""
   };
 }
 
 export function isInitialAdminConfigured() {
   const admin = getConfiguredAdminUser();
-  return Boolean(admin.username && admin.password);
+  return Boolean(admin.username && admin.password && admin.sessionSecret);
 }
 
 export function validateAdminCredentials(username: string, password: string) {
   const admin = getConfiguredAdminUser();
 
-  if (!admin.username || !admin.password) {
+  if (!admin.username || !admin.password || !admin.sessionSecret) {
     return false;
   }
 
@@ -45,6 +49,7 @@ export function createSessionToken(username: string) {
   const now = Math.floor(Date.now() / 1000);
   const payload: SessionPayload = {
     username,
+    role: SENIOR_ADMIN_ROLE,
     issuedAt: now,
     expiresAt: now + SESSION_DURATION_SECONDS
   };
@@ -82,16 +87,21 @@ export function verifySessionToken(token: string | undefined | null): Authentica
   const admin = getConfiguredAdminUser();
   const now = Math.floor(Date.now() / 1000);
 
-  if (!admin.username || !admin.password) {
+  if (!admin.username || !admin.password || !admin.sessionSecret) {
     return null;
   }
 
-  if (payload.username !== admin.username || payload.expiresAt <= now) {
+  if (
+    payload.username !== admin.username ||
+    payload.role !== SENIOR_ADMIN_ROLE ||
+    payload.expiresAt <= now
+  ) {
     return null;
   }
 
   return {
     username: payload.username,
+    role: SENIOR_ADMIN_ROLE,
     recoveryEmail: admin.recoveryEmail,
     issuedAt: payload.issuedAt,
     expiresAt: payload.expiresAt
@@ -119,7 +129,7 @@ function signPayload(encodedPayload: string) {
 
 function getSessionSecret() {
   const admin = getConfiguredAdminUser();
-  return admin.password || "gabinete-inteligente-session-development-fallback";
+  return admin.sessionSecret || "";
 }
 
 function safeEqual(first: string, second: string) {

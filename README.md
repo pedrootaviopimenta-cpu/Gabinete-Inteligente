@@ -49,14 +49,19 @@ O Gabinete Inteligente não possui cadastro público neste MVP. O acesso à plat
 Configure o administrador inicial no arquivo `.env.local`:
 
 ```env
-GI_ADMIN_USERNAME=administrador
-GI_ADMIN_PASSWORD=altere-esta-senha
-GI_ADMIN_RECOVERY_EMAIL=administrador@municipio.gov.br
+GI_ADMIN_USERNAME=<usuario-administrador>
+GI_ADMIN_PASSWORD=<senha-privada-forte>
+GI_ADMIN_RECOVERY_EMAIL=<email-auxiliar-de-recuperacao>
+GI_SESSION_SECRET=<segredo-longo-aleatorio>
 ```
 
-Após iniciar a aplicação, acesse `http://localhost:3000/login` e informe as credenciais autorizadas. Usuários não autenticados são redirecionados para a página de login ao tentar acessar módulos, solicitações administrativas ou APIs protegidas.
+Esses valores são exemplos meramente ilustrativos. Credenciais reais, senha administrativa e segredo de sessão devem ficar apenas no `.env.local` ou nas variáveis privadas da hospedagem. Nunca grave senha real, segredo de sessão ou credenciais operacionais no GitHub.
 
-O administrador é responsável por controlar quem pode usar o sistema e por fornecer credenciais apenas a usuários autorizados. Como evolução planejada, a plataforma poderá incluir criação de usuários pelo administrador, redefinição de senha, níveis de permissão e logs de acesso.
+Após iniciar a aplicação, acesse `http://localhost:3000/login` e informe as credenciais autorizadas. Usuários não autenticados são redirecionados para a página de login ao tentar acessar módulos, solicitações administrativas ou APIs protegidas. A sessão é mantida em cookie `httpOnly`, com `sameSite=lax` e `secure=true` em produção.
+
+O e-mail administrativo é campo auxiliar para futura recuperação de senha, não identificador principal de login. Não há cadastro público. O administrador sênior é responsável por controlar quem pode usar o sistema e por fornecer credenciais apenas a usuários autorizados.
+
+Como evolução planejada, a plataforma poderá incluir uma tabela `app_users` com `username`, `password_hash`, `recovery_email`, `role` e `is_active`, usando `bcrypt` para hash de senha. Também está prevista a criação de usuários autorizados pelo administrador sênior, redefinição de senha, níveis de permissão e logs de acesso.
 
 ### Modos Planejados
 
