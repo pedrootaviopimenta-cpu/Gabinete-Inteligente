@@ -2,7 +2,7 @@
 
 ## 1. Síntese Técnica
 
-O Gabinete Inteligente — GI utiliza uma arquitetura web modular baseada em Next.js, TypeScript, Tailwind CSS, Supabase e integração server-side preparada para a OpenAI API. O desenho inicial separa interface administrativa, catálogo de módulos, formulários estruturados, solicitações assistidas, prompts versionados e persistência preparada para auditoria.
+O Gabinete Inteligente utiliza uma arquitetura web modular baseada em Next.js, TypeScript, Tailwind CSS, Supabase e integração server-side preparada para a OpenAI API. O desenho inicial separa interface administrativa, catálogo de módulos, formulários estruturados, solicitações assistidas, prompts versionados e persistência preparada para auditoria.
 
 ## 2. Camadas
 

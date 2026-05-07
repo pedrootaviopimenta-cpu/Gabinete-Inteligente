@@ -48,7 +48,7 @@ export default function DashboardPage() {
               Plataforma institucional para municípios
             </p>
             <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">
-              Gabinete Inteligente — GI
+              Gabinete Inteligente
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-white/82">
               Apoio administrativo, documental e jurídico para gestão pública municipal.

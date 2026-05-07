@@ -4,6 +4,7 @@ import {
   isDocumentRequestStatus,
   type UpdateDocumentRequestInput
 } from "@/lib/document-request-types";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,12 @@ type UpdatePayload = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   const { id } = await context.params;
   const documentRequest = await getDocumentRequest(id);
 
@@ -30,6 +37,12 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   const { id } = await context.params;
   const body = (await request.json()) as UpdatePayload;
   const update: UpdateDocumentRequestInput = {};
@@ -61,4 +74,11 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   return NextResponse.json({ request: documentRequest });
+}
+
+function unauthorizedResponse() {
+  return NextResponse.json(
+    { error: "Acesso restrito a usuários autorizados." },
+    { status: 401 }
+  );
 }

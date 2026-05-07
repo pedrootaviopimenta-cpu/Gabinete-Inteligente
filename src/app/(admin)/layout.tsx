@@ -1,9 +1,12 @@
 import { AppShell } from "@/components/app-shell";
+import { requireAuthenticatedUser } from "@/lib/auth";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  const user = await requireAuthenticatedUser();
+
+  return <AppShell username={user.username}>{children}</AppShell>;
 }

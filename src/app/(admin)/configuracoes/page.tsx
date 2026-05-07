@@ -19,6 +19,21 @@ const variables = [
     description: "Reserva futura para recursos de IA em área administrativa."
   },
   {
+    name: "GI_ADMIN_USERNAME",
+    scope: "Servidor",
+    description: "Nome de usuário do administrador inicial autorizado a acessar a plataforma."
+  },
+  {
+    name: "GI_ADMIN_PASSWORD",
+    scope: "Servidor",
+    description: "Senha do administrador inicial. O valor nunca é exibido na interface."
+  },
+  {
+    name: "GI_ADMIN_RECOVERY_EMAIL",
+    scope: "Servidor",
+    description: "E-mail auxiliar para futura recuperação de senha e contato administrativo."
+  },
+  {
     name: "OPENAI_API_KEY",
     scope: "Servidor",
     description: "Chave server-side preservada para modos híbrido ou IA em etapa futura."
@@ -99,6 +114,12 @@ export default function ConfiguracoesPage() {
             }
             configuredText="Credenciais públicas e chave server-side do Supabase configuradas."
             missingText="Sem Supabase completo, o ambiente local usa armazenamento assistido em arquivo ignorado pelo Git."
+          />
+          <StatusPanel
+            title="Acesso restrito"
+            configured={Boolean(process.env.GI_ADMIN_USERNAME) && Boolean(process.env.GI_ADMIN_PASSWORD)}
+            configuredText="Administrador inicial configurado por usuário e senha em variáveis de ambiente."
+            missingText="Configure GI_ADMIN_USERNAME e GI_ADMIN_PASSWORD antes de usar a plataforma."
           />
         </div>
       </section>

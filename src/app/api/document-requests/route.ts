@@ -10,6 +10,7 @@ import {
 } from "@/lib/document-request-types";
 import { buildStructuredPayload, getFormDefinition, validateForm, type FormValues } from "@/lib/forms";
 import { getModuleBySlug, isModuleSlug, type ModuleSlug } from "@/lib/modules";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,12 @@ type DocumentRequestPayload = {
 };
 
 export async function GET(request: Request) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "";
   const moduleSlug = searchParams.get("moduleSlug") || "";
@@ -41,6 +48,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   const body = (await request.json()) as DocumentRequestPayload;
   const validation = validatePayload(body);
 
@@ -58,6 +71,13 @@ export async function POST(request: Request) {
         "Solicitação recebida para produção documental assistida. O protocolo interno foi gerado para acompanhamento administrativo."
     },
     { status: 201 }
+  );
+}
+
+function unauthorizedResponse() {
+  return NextResponse.json(
+    { error: "Acesso restrito a usuários autorizados." },
+    { status: 401 }
   );
 }
 

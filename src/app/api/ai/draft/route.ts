@@ -11,6 +11,7 @@ import {
   type ModuleSlug
 } from "@/lib/modules";
 import { getGiDeliveryMode, isClientAiEnabled } from "@/lib/runtime-config";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,12 @@ type DraftRequest = {
 };
 
 export async function GET() {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   const clientAiEnabled = isClientAiEnabled();
 
   return NextResponse.json({
@@ -43,6 +50,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return unauthorizedResponse();
+  }
+
   if (!isClientAiEnabled()) {
     return NextResponse.json(
       {
@@ -115,6 +128,13 @@ export async function POST(request: Request) {
     mode: "openai",
     notice: HUMAN_REVIEW_NOTICE
   });
+}
+
+function unauthorizedResponse() {
+  return NextResponse.json(
+    { error: "Acesso restrito a usuários autorizados." },
+    { status: 401 }
+  );
 }
 
 async function readPrompt(fileName: string) {

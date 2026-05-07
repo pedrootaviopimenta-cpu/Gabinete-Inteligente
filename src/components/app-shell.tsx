@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Building2,
   ClipboardList,
   FileText,
   LayoutDashboard,
+  LogOut,
   Scale,
   ScrollText,
   Settings,
@@ -24,8 +25,18 @@ const icons = {
   checklists: SquareCheckBig
 };
 
-export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
+export function AppShell({
+  children,
+  username
+}: Readonly<{ children: React.ReactNode; username: string }>) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
 
   return (
     <div className="min-h-screen bg-gi-background">
@@ -71,6 +82,23 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
               pathname={pathname}
             />
           </nav>
+
+          <div className="border-t border-white/10 p-3">
+            <div className="mb-3 rounded-md border border-white/10 bg-white/5 px-3 py-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gi-gold">
+                Usuário autorizado
+              </p>
+              <p className="mt-1 truncate text-sm text-white/82">{username}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="group flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-sm font-medium text-white/78 transition hover:bg-white/10 hover:text-gi-white gi-focus-ring"
+            >
+              <LogOut className="h-4 w-4 text-gi-gold/85 group-hover:text-gi-gold" aria-hidden={true} />
+              <span>Sair</span>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -99,6 +127,13 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
               />
             ))}
             <MobileLink href="/configuracoes" label="Configurações" pathname={pathname} />
+            <button
+              type="button"
+              onClick={() => void handleLogout()}
+              className="flex h-9 flex-none items-center rounded-md border border-white/15 bg-white/5 px-3 text-sm font-medium text-white/85 transition hover:border-gi-gold hover:bg-white/10 gi-focus-ring"
+            >
+              Sair
+            </button>
           </div>
         </div>
 

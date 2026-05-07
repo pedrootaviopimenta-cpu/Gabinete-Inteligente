@@ -1,8 +1,8 @@
-# Gabinete Inteligente — GI
+# Gabinete Inteligente
 
 ## 1. Visão do Produto
 
-O Gabinete Inteligente — GI é uma plataforma SaaS de apoio administrativo, documental e jurídico voltada a municípios brasileiros. Seu objetivo é auxiliar equipes públicas na elaboração organizada de minutas, respostas institucionais, ofícios, pareceres preliminares, checklists e estruturas documentais, observados os limites próprios da atuação administrativa e profissional.
+O Gabinete Inteligente é uma plataforma SaaS de apoio administrativo, documental e jurídico voltada a municípios brasileiros. Seu objetivo é auxiliar equipes públicas na elaboração organizada de minutas, respostas institucionais, ofícios, pareceres preliminares, checklists e estruturas documentais, observados os limites próprios da atuação administrativa e profissional.
 
 O produto não exerce advocacia, não profere decisão administrativa, não substitui análise jurídica individualizada, não substitui controle interno, não substitui parecer técnico e não dispensa a conferência por autoridade competente. Toda saída documental deve preservar aviso claro de revisão humana obrigatória.
 
@@ -60,23 +60,23 @@ O sistema deve proteger dados públicos sensíveis, informações pessoais, docu
 
 ## 6. Módulos
 
-### 6.1 GI Ofícios
+### 6.1 Ofícios
 
 Permite criar ofícios, comunicações e encaminhamentos administrativos. Deve orientar a redação por órgão remetente, destinatário, assunto, fundamento administrativo, providência solicitada e prazo.
 
-### 6.2 GI Ministério Público
+### 6.2 Ministério Público
 
 Auxilia respostas a requisições, recomendações e notificações do Ministério Público. Deve privilegiar cronologia, fatos comprováveis, providências adotadas, documentos anexos e ressalva de revisão pela autoridade competente.
 
-### 6.3 GI Pareceres
+### 6.3 Pareceres
 
 Gera pareceres preliminares, notas técnicas e análises iniciais. Deve exigir indicação de fatos, dúvida submetida, documentos disponíveis, legislação conhecida e limites da análise.
 
-### 6.4 GI Normas Municipais
+### 6.4 Normas Municipais
 
 Organiza normas municipais, com metadados de espécie normativa, número, ano, ementa, tema, órgão emissor, vigência e fonte. Em fase futura, poderá oferecer busca semântica, vínculos entre normas e alertas de revogação.
 
-### 6.5 GI Checklists
+### 6.5 Checklists
 
 Permite criação e execução de checklists administrativos por assunto, com registro de itens cumpridos, pendências, responsáveis e evidências documentais.
 

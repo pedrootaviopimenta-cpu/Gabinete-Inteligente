@@ -1,6 +1,6 @@
-# Gabinete Inteligente — GI
+# Gabinete Inteligente
 
-O **Gabinete Inteligente — GI** é uma aplicação SaaS concebida para apoiar municípios brasileiros na produção, organização, análise e padronização de documentos administrativos, peças de interlocução institucional e minutas jurídicas preliminares.
+O **Gabinete Inteligente** é uma aplicação SaaS concebida para apoiar municípios brasileiros na produção, organização, análise e padronização de documentos administrativos, peças de interlocução institucional e minutas jurídicas preliminares.
 
 O sistema nasce com uma premissa inegociável: **não substitui procuradores, advogados, controladores internos, agentes políticos, servidores responsáveis, autoridades administrativas ou qualquer outro profissional legalmente competente**. A plataforma oferece apoio técnico-documental, mas toda minuta, sugestão, parecer preliminar, resposta, ofício ou checklist gerado deve passar por revisão humana obrigatória antes de qualquer uso oficial, assinatura, protocolo, publicação ou encaminhamento.
 
@@ -10,23 +10,23 @@ O GI foi estruturado para reduzir retrabalho administrativo, elevar a consistên
 
 ## Módulos Iniciais
 
-### GI Ofícios
+### Ofícios
 
 Módulo destinado à criação assistida de ofícios, comunicações administrativas, encaminhamentos, solicitações e respostas formais entre órgãos públicos, entidades privadas e cidadãos.
 
-### GI Ministério Público
+### Ministério Público
 
 Módulo voltado ao apoio na elaboração de respostas administrativas a requisições, recomendações, notificações e solicitações oriundas do Ministério Público, com ênfase na clareza factual, organização documental e preservação da atuação técnica da autoridade competente.
 
-### GI Pareceres
+### Pareceres
 
 Módulo para geração de pareceres preliminares, notas técnicas e análises iniciais, sempre com advertência expressa de que a manifestação não substitui parecer jurídico formal, ato decisório ou pronunciamento técnico especializado.
 
-### GI Normas Municipais
+### Normas Municipais
 
 Módulo para organização, catalogação e consulta de leis, decretos, portarias, resoluções, instruções normativas e demais atos municipais, preparando a base para futura busca semântica e recuperação documental.
 
-### GI Checklists
+### Checklists
 
 Módulo para checklists administrativos e processuais, voltados a rotinas de contratação, resposta institucional, tramitação interna, instrução documental e conformidade mínima.
 
@@ -41,6 +41,22 @@ GI_DELIVERY_MODE=assisted
 GI_AI_ENABLED=false
 GI_ADMIN_AI_ENABLED=false
 ```
+
+## Acesso Restrito
+
+O Gabinete Inteligente não possui cadastro público neste MVP. O acesso à plataforma é restrito a usuários autorizados, com autenticação inicial por nome de usuário e senha definidos em variáveis de ambiente.
+
+Configure o administrador inicial no arquivo `.env.local`:
+
+```env
+GI_ADMIN_USERNAME=administrador
+GI_ADMIN_PASSWORD=altere-esta-senha
+GI_ADMIN_RECOVERY_EMAIL=administrador@municipio.gov.br
+```
+
+Após iniciar a aplicação, acesse `http://localhost:3000/login` e informe as credenciais autorizadas. Usuários não autenticados são redirecionados para a página de login ao tentar acessar módulos, solicitações administrativas ou APIs protegidas.
+
+O administrador é responsável por controlar quem pode usar o sistema e por fornecer credenciais apenas a usuários autorizados. Como evolução planejada, a plataforma poderá incluir criação de usuários pelo administrador, redefinição de senha, níveis de permissão e logs de acesso.
 
 ### Modos Planejados
 
@@ -64,6 +80,8 @@ npm run dev
 ```
 
 Em seguida, acesse `http://localhost:3000`.
+
+Caso o acesso restrito esteja configurado, a entrada operacional será `http://localhost:3000/login`.
 
 ## Banco de Dados
 

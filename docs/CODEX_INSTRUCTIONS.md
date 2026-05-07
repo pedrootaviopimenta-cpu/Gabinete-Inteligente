@@ -2,7 +2,7 @@
 
 ## 1. Postura Institucional
 
-Ao trabalhar neste repositório, trate o Gabinete Inteligente — GI como produto destinado à Administração Pública municipal brasileira. A redação deve ser sóbria, técnica, clara e institucional. Não invente dispositivos legais, precedentes, entendimentos de tribunais, números de processos, artigos, súmulas ou referências normativas.
+Ao trabalhar neste repositório, trate o Gabinete Inteligente como produto destinado à Administração Pública municipal brasileira. A redação deve ser sóbria, técnica, clara e institucional. Não invente dispositivos legais, precedentes, entendimentos de tribunais, números de processos, artigos, súmulas ou referências normativas.
 
 Quando houver dúvida jurídica, explicite a dúvida. Quando a informação não estiver disponível no contexto, declare a limitação. A precisão é preferível à ornamentação.
 

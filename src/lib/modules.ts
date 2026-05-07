@@ -24,8 +24,8 @@ export const HUMAN_REVIEW_NOTICE =
 export const modules: GiModule[] = [
   {
     slug: "oficios",
-    name: "GI Ofícios",
-    shortName: "GI Ofícios",
+    name: "Ofícios",
+    shortName: "Ofícios",
     area: "Comunicação administrativa",
     href: "/oficios",
     description:
@@ -35,8 +35,8 @@ export const modules: GiModule[] = [
   },
   {
     slug: "ministerio-publico",
-    name: "GI Ministério Público",
-    shortName: "GI MP",
+    name: "Ministério Público",
+    shortName: "MP",
     area: "Resposta institucional",
     href: "/ministerio-publico",
     description:
@@ -46,8 +46,8 @@ export const modules: GiModule[] = [
   },
   {
     slug: "pareceres",
-    name: "GI Pareceres",
-    shortName: "GI Pareceres",
+    name: "Pareceres",
+    shortName: "Pareceres",
     area: "Análise preliminar",
     href: "/pareceres",
     description:
@@ -57,8 +57,8 @@ export const modules: GiModule[] = [
   },
   {
     slug: "normas-municipais",
-    name: "GI Normas Municipais",
-    shortName: "GI Normas",
+    name: "Normas Municipais",
+    shortName: "Normas",
     area: "Base normativa",
     href: "/normas-municipais",
     description:
@@ -68,8 +68,8 @@ export const modules: GiModule[] = [
   },
   {
     slug: "checklists",
-    name: "GI Checklists",
-    shortName: "GI Checklists",
+    name: "Checklists",
+    shortName: "Checklists",
     area: "Conformidade operacional",
     href: "/checklists",
     description:
