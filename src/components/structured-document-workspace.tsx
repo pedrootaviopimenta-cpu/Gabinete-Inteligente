@@ -5,6 +5,7 @@ import { CheckCircle2, Copy, Eraser, FileDown, Send, Sparkles } from "lucide-rea
 import { CheckboxField } from "@/components/fields/checkbox-field";
 import { CheckboxGroupField } from "@/components/fields/checkbox-group-field";
 import { DateField } from "@/components/fields/date-field";
+import { DocumentAttachmentsPanel } from "@/components/document-attachments-panel";
 import { RepeatableListField } from "@/components/fields/repeatable-list-field";
 import { SelectField } from "@/components/fields/select-field";
 import { TextField } from "@/components/fields/text-field";
@@ -39,6 +40,7 @@ type RequesterValues = {
 };
 
 type SubmissionConfirmation = {
+  requestId: string;
   protocolNumber: string;
   title: string;
 };
@@ -125,7 +127,7 @@ export function StructuredDocumentWorkspace({
     const payload = (await response.json()) as {
       error?: string;
       protocolNumber?: string;
-      request?: { protocol_number: string; title: string };
+      request?: { id: string; protocol_number: string; title: string };
     };
 
     if (!response.ok) {
@@ -135,6 +137,7 @@ export function StructuredDocumentWorkspace({
     }
 
     setConfirmation({
+      requestId: payload.request?.id || "",
       protocolNumber: payload.protocolNumber || payload.request?.protocol_number || "",
       title: payload.request?.title || requesterValues.title
     });
@@ -414,8 +417,9 @@ export function StructuredDocumentWorkspace({
         </form>
 
         {usesAssistedFlow ? (
-          <aside className="gi-panel overflow-hidden xl:sticky xl:top-24 xl:self-start">
-            <div className="border-t-4 border-gi-gold p-5">
+          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+            <section className="gi-panel overflow-hidden">
+              <div className="border-t-4 border-gi-gold p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-semibold text-gi-ink">
@@ -474,7 +478,16 @@ export function StructuredDocumentWorkspace({
             <div className="mt-4 min-h-96 whitespace-pre-wrap rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-ink">
               {structuredContext}
             </div>
-            </div>
+              </div>
+            </section>
+
+            {confirmation?.requestId ? (
+              <DocumentAttachmentsPanel
+                requestId={confirmation.requestId}
+                allowUpload={true}
+                title="Documentos de apoio"
+              />
+            ) : null}
           </aside>
         ) : (
           <aside className="gi-panel overflow-hidden xl:sticky xl:top-24 xl:self-start">

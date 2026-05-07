@@ -24,6 +24,14 @@ Solicitações, campos estruturados, contexto estruturado, notas internas, texto
 
 As APIs devem retornar mensagens genéricas, sem stack trace, segredos, cabeçalhos, cookies, prompts completos ou erros brutos de provedores externos.
 
+## Anexos e Documentos de Apoio
+
+Anexos vinculados a solicitações assistidas são conteúdo confidencial. Upload, listagem, download e eventual remoção devem exigir sessão válida. O sistema não deve expor `storage_path`, caminho local, bucket interno, chave Supabase, URL assinada permanente ou qualquer detalhe que permita acesso direto ao arquivo fora das rotas autenticadas.
+
+Tipos permitidos no MVP: PDF, DOC, DOCX, PNG, JPEG, XLSX, CSV e TXT. O limite inicial é de 15 MB por arquivo e até 10 documentos por solicitação. Arquivos fora desses parâmetros devem ser recusados com mensagem institucional e sem gravação parcial.
+
+Em desenvolvimento, os anexos podem ser gravados em `.local-data/uploads/`, com metadados em `.local-data/document_request_attachments.json`. Esses arquivos nunca devem ser commitados. Em produção, utilize Supabase Storage ou serviço equivalente com bucket privado, acesso server-side, backup, retenção e auditoria compatíveis com dados administrativos sensíveis.
+
 ## Persistência Local
 
-O diretório `.local-data` é fallback exclusivo de desenvolvimento. Nunca commite `.local-data` ou `document_requests.json`. Em produção, use Supabase ou banco apropriado, com controle de acesso, auditoria e backup compatíveis com dados sensíveis.
+O diretório `.local-data` é fallback exclusivo de desenvolvimento. Nunca commite `.local-data`, `document_requests.json`, `document_request_attachments.json` ou arquivos em `.local-data/uploads/`. Em produção, use Supabase, Supabase Storage ou banco e armazenamento apropriados, com controle de acesso, auditoria e backup compatíveis com dados sensíveis.

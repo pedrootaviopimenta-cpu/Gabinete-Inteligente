@@ -42,6 +42,16 @@ GI_AI_ENABLED=false
 GI_ADMIN_AI_ENABLED=false
 ```
 
+## Anexos e Documentos de Apoio
+
+O fluxo assistido permite anexar documentos às solicitações depois da geração do protocolo interno. Essa etapa é destinada a ofícios do Ministério Público, processos administrativos, relatórios, contratos, memorandos, leis municipais, imagens, planilhas e demais arquivos de apoio à análise humana.
+
+Os anexos são confidenciais e exigem autenticação para upload, listagem e download. O sistema não expõe o caminho interno de armazenamento ao usuário e não gera URLs públicas para os arquivos no MVP.
+
+Tipos inicialmente permitidos: PDF, DOC, DOCX, PNG, JPEG, XLSX, CSV e TXT. O limite é de 15 MB por arquivo e até 10 documentos por solicitação.
+
+Em desenvolvimento, quando o Supabase Storage não estiver configurado, os arquivos são gravados em `.local-data/uploads/` e os metadados em `.local-data/document_request_attachments.json`. Esse fallback é apenas local, é ignorado pelo Git e não deve ser usado como solução de produção. Para ambiente produtivo, recomenda-se Supabase Storage com bucket privado, variáveis secretas de hospedagem, controle de acesso server-side e política de backup compatível com dados sensíveis.
+
 ## Acesso Restrito
 
 O Gabinete Inteligente não possui cadastro público neste MVP. O acesso à plataforma é restrito a usuários autorizados, com autenticação inicial por nome de usuário e senha definidos em variáveis de ambiente.
@@ -90,7 +100,7 @@ Caso o acesso restrito esteja configurado, a entrada operacional será `http://l
 
 ## Banco de Dados
 
-O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, solicitações assistidas em `document_requests`, logs de geração por IA, normas municipais e checklists.
+O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, solicitações assistidas em `document_requests`, anexos em `document_request_attachments`, logs de geração por IA, normas municipais e checklists.
 
 ## Segurança e Governança
 
@@ -98,7 +108,7 @@ A aplicação deve operar com separação entre chaves públicas e privadas, Row
 
 Leia também [docs/SECURITY.md](docs/SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
 
-O arquivo `.env.local` e o diretório `.local-data` são ignorados pelo Git. O fallback `.local-data/document_requests.json` é apenas para desenvolvimento local; em produção, utilize Supabase ou banco apropriado com controles de acesso e auditoria.
+O arquivo `.env.local` e o diretório `.local-data` são ignorados pelo Git. Os fallbacks `.local-data/document_requests.json`, `.local-data/document_request_attachments.json` e `.local-data/uploads/` são apenas para desenvolvimento local; em produção, utilize Supabase, Supabase Storage ou banco e armazenamento apropriados com controles de acesso e auditoria.
 
 ## Exportação DOCX
 

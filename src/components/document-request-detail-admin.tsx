@@ -25,6 +25,7 @@ import {
   PriorityBadge,
   StatusBadge
 } from "@/components/document-request-badges";
+import { DocumentAttachmentsPanel } from "@/components/document-attachments-panel";
 
 type EditableRequestFields = {
   status: DocumentRequestStatus;
@@ -203,6 +204,12 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
               <InfoLine label="Setor/unidade solicitante" value={request.requester_department} />
             </div>
           </section>
+
+          <DocumentAttachmentsPanel
+            requestId={request.id}
+            title="Documentos anexos"
+            description="Documentos vinculados à solicitação assistida, inclusive ofícios, processos, relatórios, contratos, memorandos, normas municipais, imagens, planilhas e arquivos de apoio."
+          />
 
           <section className="gi-panel p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

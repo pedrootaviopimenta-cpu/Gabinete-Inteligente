@@ -81,6 +81,18 @@ create table public.document_requests (
   updated_at timestamptz not null default now()
 );
 
+create table public.document_request_attachments (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.document_requests(id) on delete cascade,
+  file_name text not null,
+  file_type text not null,
+  file_size bigint not null,
+  storage_path text not null,
+  uploaded_by text,
+  visibility text not null default 'internal',
+  created_at timestamptz not null default now()
+);
+
 create table public.ai_generation_logs (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,
@@ -161,6 +173,7 @@ create index documents_organization_module_idx on public.documents (organization
 create index document_requests_status_created_idx on public.document_requests (status, created_at desc);
 create index document_requests_module_created_idx on public.document_requests (module_slug, created_at desc);
 create index document_requests_priority_created_idx on public.document_requests (priority, created_at desc);
+create index document_request_attachments_request_idx on public.document_request_attachments (request_id, created_at desc);
 create index ai_generation_logs_organization_created_idx on public.ai_generation_logs (organization_id, created_at desc);
 create index municipal_norms_organization_subject_idx on public.municipal_norms (organization_id, subject);
 create index checklist_runs_organization_created_idx on public.checklist_runs (organization_id, created_at desc);
@@ -169,6 +182,7 @@ alter table public.organizations enable row level security;
 alter table public.profiles enable row level security;
 alter table public.documents enable row level security;
 alter table public.document_requests enable row level security;
+alter table public.document_request_attachments enable row level security;
 alter table public.ai_generation_logs enable row level security;
 alter table public.municipal_norms enable row level security;
 alter table public.checklist_templates enable row level security;
