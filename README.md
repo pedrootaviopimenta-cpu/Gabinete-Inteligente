@@ -96,7 +96,7 @@ O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial
 
 A aplicação deve operar com separação entre chaves públicas e privadas, Row Level Security no Supabase, logs de uso de IA quando o modo futuro for habilitado, versionamento de prompts e registro do usuário responsável por cada solicitação ou produção. Nenhuma funcionalidade deve presumir validade jurídica automática do conteúdo produzido.
 
-Leia também [SECURITY.md](SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
+Leia também [docs/SECURITY.md](docs/SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
 
 O arquivo `.env.local` e o diretório `.local-data` são ignorados pelo Git. O fallback `.local-data/document_requests.json` é apenas para desenvolvimento local; em produção, utilize Supabase ou banco apropriado com controles de acesso e auditoria.
 

@@ -2,6 +2,8 @@
 
 O Gabinete Inteligente trata solicitações administrativas, minutas, documentos, respostas institucionais, notas internas e contextos estruturados como conteúdo confidencial.
 
+Consulte também [docs/SECURITY.md](docs/SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
+
 ## Credenciais e Segredos
 
 Nunca commite `.env.local`, senhas reais, `GI_SESSION_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY` ou qualquer credencial operacional. O arquivo `.env.example` deve conter apenas placeholders vazios.

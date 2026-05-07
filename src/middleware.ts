@@ -11,6 +11,7 @@ const protectedPagePaths = [
   "/normas-municipais",
   "/checklists",
   "/configuracoes",
+  "/minhas-solicitacoes",
   "/admin"
 ];
 
@@ -60,6 +61,7 @@ export const config = {
     "/normas-municipais/:path*",
     "/checklists/:path*",
     "/configuracoes/:path*",
+    "/minhas-solicitacoes/:path*",
     "/admin/:path*",
     "/login",
     "/api/document-requests/:path*",
