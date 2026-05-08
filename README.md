@@ -52,6 +52,32 @@ Tipos inicialmente permitidos: PDF, DOC, DOCX, PNG, JPEG, XLSX, CSV e TXT. O lim
 
 Em desenvolvimento, quando o Supabase Storage não estiver configurado, os arquivos são gravados em `.local-data/uploads/` e os metadados em `.local-data/document_request_attachments.json`. Esse fallback é apenas local, é ignorado pelo Git e não deve ser usado como solução de produção. Para ambiente produtivo, recomenda-se Supabase Storage com bucket privado, variáveis secretas de hospedagem, controle de acesso server-side e política de backup compatível com dados sensíveis.
 
+## Painel do Solicitante
+
+Usuários autorizados podem acessar `/minhas-solicitacoes` para acompanhar protocolo, módulo, título, status, prioridade, datas de criação e atualização, documentos anexos, pendências públicas e documento final quando disponível.
+
+Essa área não exibe notas internas, comentários administrativos reservados, raciocínio interno, cautelas estratégicas ou campos de gestão interna. O detalhe fica em `/minhas-solicitacoes/[id]` e utiliza API própria com retorno saneado para o solicitante.
+
+No MVP, como o acesso ainda usa uma credencial única de administrador sênior por variável de ambiente, o painel lista todas as solicitações para teste. A arquitetura já contempla campos de preparação como `requester_username`, `requester_email` e `requester_user_id`. Em produção multiusuário, cada usuário deverá visualizar apenas as solicitações vinculadas ao seu identificador autenticado.
+
+## Comunicação com o Solicitante
+
+Mensagens públicas ao solicitante são registradas separadamente das notas internas da equipe responsável. A tabela `document_request_messages` distingue `visibility=public` e `visibility=internal`, preservando histórico cronológico de comunicações, notas reservadas e mensagens automáticas do sistema por alteração de status.
+
+O painel administrativo pode registrar mensagem pública e nota interna. O painel do solicitante exibe somente mensagens públicas e nunca apresenta cautelas estratégicas, observações reservadas, notas internas ou comentários de revisão administrativa/jurídica.
+
+## Pendências Documentais
+
+A tabela `document_request_pending_items` registra documentos e informações faltantes por solicitação, com status `pendente`, `enviado`, `dispensado` ou `resolvido`. O painel administrativo permite criar pendências, editar descrição e atualizar o status. O painel do solicitante exibe as pendências e orienta a anexação do documento relacionado na própria solicitação.
+
+Quando houver pendência aberta, o sistema sugere que a equipe avalie alterar o status da solicitação para `aguardando_documentos`, sem alteração automática.
+
+## Exportação DOCX e Templates
+
+O administrador pode exportar DOCX a partir do texto final salvo da solicitação. A exportação usa dados institucionais cadastrados em `/configuracoes`, inclui identificação do sistema, módulo, protocolo, título, texto final, aviso de revisão humana e campo de assinatura.
+
+Leia também [docs/DOCX_TEMPLATES.md](docs/DOCX_TEMPLATES.md) para o planejamento de brasão municipal, cabeçalho personalizado, rodapé institucional, numeração automática, assinatura digital e modelos por município.
+
 ## Acesso Restrito
 
 O Gabinete Inteligente não possui cadastro público neste MVP. O acesso à plataforma é restrito a usuários autorizados, com autenticação inicial por nome de usuário e senha definidos em variáveis de ambiente.
@@ -100,16 +126,18 @@ Caso o acesso restrito esteja configurado, a entrada operacional será `http://l
 
 ## Banco de Dados
 
-O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, solicitações assistidas em `document_requests`, anexos em `document_request_attachments`, logs de geração por IA, normas municipais e checklists.
+O arquivo [database/schema.sql](database/schema.sql) contém a estrutura inicial para Supabase/PostgreSQL, incluindo organizações, perfis, documentos, solicitações assistidas em `document_requests`, anexos em `document_request_attachments`, mensagens em `document_request_messages`, pendências em `document_request_pending_items`, eventos de auditoria em `document_request_events`, configurações institucionais em `organization_settings`, logs de geração por IA, normas municipais e checklists.
 
 ## Segurança e Governança
 
 A aplicação deve operar com separação entre chaves públicas e privadas, Row Level Security no Supabase, logs de uso de IA quando o modo futuro for habilitado, versionamento de prompts e registro do usuário responsável por cada solicitação ou produção. Nenhuma funcionalidade deve presumir validade jurídica automática do conteúdo produzido.
 
-Leia também [docs/SECURITY.md](docs/SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
+Leia também [docs/SECURITY.md](docs/SECURITY.md), [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md), [docs/ROLES_AND_PERMISSIONS.md](docs/ROLES_AND_PERMISSIONS.md), [docs/NORMATIVE_RAG_PLAN.md](docs/NORMATIVE_RAG_PLAN.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) e [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md).
 
-O arquivo `.env.local` e o diretório `.local-data` são ignorados pelo Git. Os fallbacks `.local-data/document_requests.json`, `.local-data/document_request_attachments.json` e `.local-data/uploads/` são apenas para desenvolvimento local; em produção, utilize Supabase, Supabase Storage ou banco e armazenamento apropriados com controles de acesso e auditoria.
+O arquivo `.env.local` e o diretório `.local-data` são ignorados pelo Git. Os fallbacks `.local-data/document_requests.json`, `.local-data/document_request_attachments.json`, `.local-data/document_request_messages.json`, `.local-data/document_request_pending_items.json`, `.local-data/document_request_events.json`, `.local-data/protocol_sequences.json`, `.local-data/municipal_norms.json`, `.local-data/organization_settings.json` e `.local-data/uploads/` são apenas para desenvolvimento local; em produção, utilize Supabase, Supabase Storage ou banco e armazenamento apropriados com controles de acesso e auditoria.
 
-## Exportação DOCX
+## Auditoria e Permissões
 
-A exportação DOCX é prevista como evolução arquitetural. A estrutura documental inicial já separa metadados, conteúdo e módulos de origem para permitir geração futura de documentos oficiais em formato editável.
+O sistema registra eventos relevantes das solicitações, incluindo criação, alteração de status, mensagens, notas internas, anexos, pendências, atualização do documento final e exportação DOCX. Os eventos não devem conter senhas, tokens, cookies, chaves privadas, prompt completo ou conteúdo integral de documentos.
+
+As permissões estão centralizadas em `src/lib/permissions.ts`. O MVP mantém o administrador inicial como `senior_admin`, com preparação para perfis futuros como `admin_operacional`, `revisor_juridico`, `servidor_solicitante` e `usuario_consulta`.

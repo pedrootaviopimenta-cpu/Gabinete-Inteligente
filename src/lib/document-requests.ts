@@ -1,7 +1,9 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { matchesDeadlineFilter, type DeadlineFilter } from "@/lib/deadlines";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSequentialProtocol } from "@/lib/protocols";
 import type {
   CreateDocumentRequestInput,
   DocumentRequest,
@@ -16,6 +18,7 @@ type ListDocumentRequestsFilters = {
   status?: DocumentRequestStatus;
   moduleSlug?: ModuleSlug;
   priority?: DocumentRequestPriority;
+  deadline?: DeadlineFilter;
 };
 
 const localDataDirectory = path.join(process.cwd(), ".local-data");
@@ -48,7 +51,9 @@ export async function listDocumentRequests(filters: ListDocumentRequestsFilters 
       throw new Error(error.message);
     }
 
-    return (data || []).map(normalizeDocumentRequest);
+    return (data || [])
+      .map(normalizeDocumentRequest)
+      .filter((request) => matchesDeadlineFilter(request, filters.deadline));
   }
 
   const requests = await readLocalRequests();
@@ -57,6 +62,7 @@ export async function listDocumentRequests(filters: ListDocumentRequestsFilters 
     .filter((request) => !filters.status || request.status === filters.status)
     .filter((request) => !filters.moduleSlug || request.module_slug === filters.moduleSlug)
     .filter((request) => !filters.priority || request.priority === filters.priority)
+    .filter((request) => matchesDeadlineFilter(request, filters.deadline))
     .sort((first, second) => second.created_at.localeCompare(first.created_at));
 }
 
@@ -88,6 +94,8 @@ export async function createDocumentRequest(input: CreateDocumentRequestInput) {
     module_slug: input.module_slug,
     title: input.title.trim(),
     requester_name: input.requester_name.trim(),
+    requester_username: input.requester_username?.trim() || "",
+    requester_user_id: input.requester_user_id?.trim() || "",
     requester_email: input.requester_email.trim(),
     requester_phone: input.requester_phone?.trim() || "",
     requester_department: input.requester_department.trim(),
@@ -98,7 +106,12 @@ export async function createDocumentRequest(input: CreateDocumentRequestInput) {
     internal_notes: "",
     final_document_text: "",
     final_document_url: "",
-    protocol_number: createProtocolNumber(now),
+    related_norms_text: "",
+    protocol_number: await createSequentialProtocol(input.module_slug, new Date(now)),
+    due_date: input.due_date || "",
+    received_at: input.received_at || "",
+    completed_at: "",
+    deadline_notes: input.deadline_notes || "",
     created_at: now,
     updated_at: now
   };
@@ -132,9 +145,16 @@ export async function updateDocumentRequest(id: string, input: UpdateDocumentReq
     return null;
   }
 
+  const sanitizedUpdate = sanitizeUpdate(input);
   const updated: DocumentRequest = {
     ...current,
-    ...sanitizeUpdate(input),
+    ...sanitizedUpdate,
+    completed_at:
+      sanitizedUpdate.status === "concluido" && current.status !== "concluido"
+        ? new Date().toISOString()
+        : sanitizedUpdate.completed_at !== undefined
+          ? sanitizedUpdate.completed_at
+          : current.completed_at,
     updated_at: new Date().toISOString()
   };
 
@@ -159,12 +179,6 @@ export async function updateDocumentRequest(id: string, input: UpdateDocumentReq
   const nextRequests = requests.map((request) => (request.id === id ? updated : request));
   await writeLocalRequests(nextRequests);
   return updated;
-}
-
-function createProtocolNumber(isoDate: string) {
-  const date = isoDate.slice(0, 10).replaceAll("-", "");
-  const suffix = randomUUID().slice(0, 8).toUpperCase();
-  return `GI-${date}-${suffix}`;
 }
 
 async function readLocalRequests(): Promise<DocumentRequest[]> {
@@ -204,6 +218,26 @@ function sanitizeUpdate(input: UpdateDocumentRequestInput): UpdateDocumentReques
     update.final_document_url = input.final_document_url;
   }
 
+  if (typeof input.related_norms_text === "string") {
+    update.related_norms_text = input.related_norms_text;
+  }
+
+  if (typeof input.due_date === "string") {
+    update.due_date = normalizeDate(input.due_date);
+  }
+
+  if (typeof input.received_at === "string") {
+    update.received_at = normalizeDate(input.received_at);
+  }
+
+  if (typeof input.completed_at === "string") {
+    update.completed_at = input.completed_at;
+  }
+
+  if (typeof input.deadline_notes === "string") {
+    update.deadline_notes = input.deadline_notes;
+  }
+
   return update;
 }
 
@@ -213,6 +247,8 @@ function toDatabaseRow(request: DocumentRequest) {
     module_slug: request.module_slug,
     title: request.title,
     requester_name: request.requester_name,
+    requester_username: request.requester_username,
+    requester_user_id: request.requester_user_id || null,
     requester_email: request.requester_email,
     requester_phone: request.requester_phone,
     requester_department: request.requester_department,
@@ -223,7 +259,12 @@ function toDatabaseRow(request: DocumentRequest) {
     internal_notes: request.internal_notes,
     final_document_text: request.final_document_text,
     final_document_url: request.final_document_url,
+    related_norms_text: request.related_norms_text,
     protocol_number: request.protocol_number,
+    due_date: request.due_date || null,
+    received_at: request.received_at || null,
+    completed_at: request.completed_at || null,
+    deadline_notes: request.deadline_notes,
     created_at: request.created_at,
     updated_at: request.updated_at
   };
@@ -235,6 +276,11 @@ function toDatabaseUpdate(request: DocumentRequest) {
     internal_notes: request.internal_notes,
     final_document_text: request.final_document_text,
     final_document_url: request.final_document_url,
+    related_norms_text: request.related_norms_text,
+    due_date: request.due_date || null,
+    received_at: request.received_at || null,
+    completed_at: request.completed_at || null,
+    deadline_notes: request.deadline_notes,
     updated_at: request.updated_at
   };
 }
@@ -245,6 +291,8 @@ function normalizeDocumentRequest(row: Record<string, unknown>): DocumentRequest
     module_slug: String(row.module_slug || "oficios") as ModuleSlug,
     title: String(row.title || ""),
     requester_name: String(row.requester_name || ""),
+    requester_username: String(row.requester_username || ""),
+    requester_user_id: String(row.requester_user_id || ""),
     requester_email: String(row.requester_email || ""),
     requester_phone: String(row.requester_phone || ""),
     requester_department: String(row.requester_department || ""),
@@ -255,8 +303,17 @@ function normalizeDocumentRequest(row: Record<string, unknown>): DocumentRequest
     internal_notes: String(row.internal_notes || ""),
     final_document_text: String(row.final_document_text || ""),
     final_document_url: String(row.final_document_url || ""),
+    related_norms_text: String(row.related_norms_text || ""),
     protocol_number: String(row.protocol_number || ""),
+    due_date: String(row.due_date || ""),
+    received_at: String(row.received_at || ""),
+    completed_at: String(row.completed_at || ""),
+    deadline_notes: String(row.deadline_notes || ""),
     created_at: String(row.created_at || ""),
     updated_at: String(row.updated_at || "")
   };
+}
+
+function normalizeDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
 }

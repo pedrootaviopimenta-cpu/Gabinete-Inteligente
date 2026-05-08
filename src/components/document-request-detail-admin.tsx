@@ -6,9 +6,11 @@ import {
   ArrowLeft,
   ClipboardCopy,
   ExternalLink,
+  FileDown,
   FileText,
   RefreshCw,
   Save,
+  Sparkles,
   SquareCheckBig
 } from "lucide-react";
 import {
@@ -25,20 +27,36 @@ import {
   PriorityBadge,
   StatusBadge
 } from "@/components/document-request-badges";
+import { DocumentRequestCommunicationPanel } from "@/components/document-request-communication-panel";
 import { DocumentAttachmentsPanel } from "@/components/document-attachments-panel";
+import { DocumentRequestPendingItemsPanel } from "@/components/document-request-pending-items-panel";
+import { DocumentRequestEventsPanel } from "@/components/document-request-events-panel";
 
 type EditableRequestFields = {
   status: DocumentRequestStatus;
   internal_notes: string;
   final_document_text: string;
   final_document_url: string;
+  related_norms_text: string;
+  due_date: string;
+  received_at: string;
+  deadline_notes: string;
 };
 
-export function DocumentRequestDetailAdmin({ requestId }: { requestId: string }) {
+export function DocumentRequestDetailAdmin({
+  requestId,
+  internalAiAvailable = false
+}: {
+  requestId: string;
+  internalAiAvailable?: boolean;
+}) {
   const [request, setRequest] = useState<DocumentRequest | null>(null);
   const [editValues, setEditValues] = useState<EditableRequestFields | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isGeneratingInternalDraft, setIsGeneratingInternalDraft] = useState(false);
+  const [internalAiDraft, setInternalAiDraft] = useState("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -65,7 +83,11 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
       status: payload.request.status,
       internal_notes: payload.request.internal_notes,
       final_document_text: payload.request.final_document_text,
-      final_document_url: payload.request.final_document_url
+      final_document_url: payload.request.final_document_url,
+      related_norms_text: payload.request.related_norms_text,
+      due_date: payload.request.due_date,
+      received_at: payload.request.received_at,
+      deadline_notes: payload.request.deadline_notes
     });
     setIsLoading(false);
   }
@@ -99,7 +121,11 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
       status: payload.request.status,
       internal_notes: payload.request.internal_notes,
       final_document_text: payload.request.final_document_text,
-      final_document_url: payload.request.final_document_url
+      final_document_url: payload.request.final_document_url,
+      related_norms_text: payload.request.related_norms_text,
+      due_date: payload.request.due_date,
+      received_at: payload.request.received_at,
+      deadline_notes: payload.request.deadline_notes
     });
     setMessage("Solicitação atualizada com sucesso.");
     setIsSaving(false);
@@ -112,6 +138,88 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
 
     await navigator.clipboard.writeText(request.structured_context);
     setMessage("Contexto estruturado copiado para a área de transferência.");
+  }
+
+  async function exportDocx() {
+    if (!request || !request.final_document_text.trim()) {
+      setMessage("Insira o texto final antes de exportar.");
+      return;
+    }
+
+    setIsExporting(true);
+    setMessage("");
+
+    const response = await fetch(`/api/document-requests/${request.id}/export-docx`, {
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      setMessage(errorText || "Não foi possível exportar o documento DOCX.");
+      setIsExporting(false);
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${request.protocol_number}.docx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setMessage("Arquivo DOCX gerado para download.");
+    setIsExporting(false);
+  }
+
+  async function generateInternalAiDraft() {
+    if (!request) {
+      return;
+    }
+
+    setIsGeneratingInternalDraft(true);
+    setMessage("");
+
+    const response = await fetch(`/api/document-requests/${request.id}/internal-ai-draft`, {
+      method: "POST"
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      draft?: string;
+      error?: string;
+    };
+
+    if (!response.ok || !payload.draft) {
+      setMessage(payload.error || "Não foi possível gerar o rascunho interno com IA.");
+      setIsGeneratingInternalDraft(false);
+      return;
+    }
+
+    setInternalAiDraft(payload.draft);
+    setMessage("Rascunho interno gerado para apoio da equipe responsável.");
+    setIsGeneratingInternalDraft(false);
+  }
+
+  async function copyInternalAiDraft() {
+    if (!internalAiDraft) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(internalAiDraft);
+    setMessage("Rascunho interno copiado para a área de transferência.");
+  }
+
+  function useInternalDraftAsBase() {
+    if (!internalAiDraft) {
+      return;
+    }
+
+    setEditValues((current) =>
+      current ? { ...current, final_document_text: internalAiDraft } : current
+    );
+    setMessage(
+      "Rascunho interno inserido como base do texto final. Revise antes de salvar ou concluir."
+    );
   }
 
   if (isLoading) {
@@ -190,6 +298,8 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
               <InfoLine label="Módulo" value={module.name} />
               <InfoLine label="Status atual" value={documentRequestStatusLabels[request.status]} />
               <InfoLine label="Prioridade" value={formatPriority(request.priority)} />
+              <InfoLine label="Prazo" value={formatDateOnly(request.due_date)} />
+              <InfoLine label="Recebimento" value={formatDateOnly(request.received_at)} />
               <InfoLine label="Criada em" value={formatDateTime(request.created_at)} />
               <InfoLine label="Atualizada em" value={formatDateTime(request.updated_at)} />
             </div>
@@ -207,9 +317,16 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
 
           <DocumentAttachmentsPanel
             requestId={request.id}
+            allowUpload={true}
             title="Documentos anexos"
             description="Documentos vinculados à solicitação assistida, inclusive ofícios, processos, relatórios, contratos, memorandos, normas municipais, imagens, planilhas e arquivos de apoio."
           />
+
+          <DocumentRequestPendingItemsPanel requestId={request.id} canManage={true} />
+
+          <DocumentRequestCommunicationPanel requestId={request.id} />
+
+          <DocumentRequestEventsPanel requestId={request.id} />
 
           <section className="gi-panel p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -240,11 +357,71 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
         </div>
 
         <aside className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+          {internalAiAvailable ? (
+            <section className="gi-panel overflow-hidden">
+              <div className="border-t-4 border-gi-gold p-5">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="mt-1 h-5 w-5 flex-none text-gi-gold" aria-hidden={true} />
+                  <div>
+                    <h2 className="text-base font-semibold text-gi-ink">
+                      Rascunho interno com IA
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-gi-muted">
+                      Apoio interno à equipe responsável. O rascunho não é entregue ao solicitante
+                      e não altera o texto final automaticamente.
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mt-4 rounded-md border border-gi-gold/35 bg-gi-gold/10 p-3 text-sm leading-6 text-gi-ink">
+                  Rascunho interno. Revisão humana obrigatória antes de qualquer utilização.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => void generateInternalAiDraft()}
+                  disabled={isGeneratingInternalDraft}
+                  className="gi-button-assisted mt-4"
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden={true} />
+                  {isGeneratingInternalDraft
+                    ? "Gerando rascunho"
+                    : "Gerar rascunho interno com IA"}
+                </button>
+
+                {internalAiDraft ? (
+                  <div className="mt-4 space-y-3">
+                    <div className="max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-gi-line bg-gi-background p-4 text-sm leading-6 text-gi-ink">
+                      {internalAiDraft}
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => void copyInternalAiDraft()}
+                        className="gi-button-secondary"
+                      >
+                        <ClipboardCopy className="h-4 w-4" aria-hidden={true} />
+                        Copiar rascunho
+                      </button>
+                      <button
+                        type="button"
+                        onClick={useInternalDraftAsBase}
+                        className="gi-button-primary"
+                      >
+                        Usar como base do texto final
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
           <section className="gi-panel p-5">
             <h2 className="text-base font-semibold text-gi-ink">Gestão interna</h2>
             <p className="mt-2 text-sm leading-6 text-gi-muted">
-              Atualize a tramitação, registre notas de análise e consolide o texto final após a
-              revisão humana competente.
+              Atualize a tramitação e consolide o texto final após a revisão humana competente.
+              Mensagens e notas internas devem ser registradas na seção Comunicação.
             </p>
 
             <label className="mt-4 block text-sm font-medium text-gi-ink">
@@ -268,18 +445,63 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
               </select>
             </label>
 
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block text-sm font-medium text-gi-ink">
+                Data de recebimento
+                <input
+                  type="date"
+                  value={editValues.received_at}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current ? { ...current, received_at: event.target.value } : current
+                    )
+                  }
+                  className="gi-input"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-gi-ink">
+                Prazo final
+                <input
+                  type="date"
+                  value={editValues.due_date}
+                  onChange={(event) =>
+                    setEditValues((current) =>
+                      current ? { ...current, due_date: event.target.value } : current
+                    )
+                  }
+                  className="gi-input"
+                />
+              </label>
+            </div>
+
             <label className="mt-4 block text-sm font-medium text-gi-ink">
-              Notas internas
+              Observações de prazo
               <textarea
-                value={editValues.internal_notes}
+                value={editValues.deadline_notes}
                 onChange={(event) =>
                   setEditValues((current) =>
-                    current ? { ...current, internal_notes: event.target.value } : current
+                    current ? { ...current, deadline_notes: event.target.value } : current
                   )
                 }
-                rows={6}
+                rows={3}
                 className="gi-input resize-y"
-                placeholder="Registre cautelas, pendências, documentos faltantes e encaminhamentos internos."
+                placeholder="Registre prazo recebido, contagem interna ou cautelas de tramitação."
+              />
+            </label>
+
+            <label className="mt-4 block text-sm font-medium text-gi-ink">
+              Normas relacionadas
+              <textarea
+                value={editValues.related_norms_text}
+                onChange={(event) =>
+                  setEditValues((current) =>
+                    current ? { ...current, related_norms_text: event.target.value } : current
+                  )
+                }
+                rows={3}
+                className="gi-input resize-y"
+                placeholder="Indique leis, decretos, portarias ou atos municipais relacionados, sem presumir vigência."
               />
             </label>
 
@@ -324,6 +546,23 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
               </a>
             ) : null}
 
+            <div className="mt-4 rounded-md border border-gi-line bg-gi-background p-3 text-sm leading-6 text-gi-muted">
+              <p>
+                {request.final_document_text.trim()
+                  ? "O texto final salvo pode ser exportado em formato Word editável."
+                  : "Insira o texto final antes de exportar."}
+              </p>
+              <button
+                type="button"
+                onClick={() => void exportDocx()}
+                disabled={isExporting || !request.final_document_text.trim()}
+                className="gi-button-secondary mt-3 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FileDown className="h-4 w-4" aria-hidden={true} />
+                {isExporting ? "Exportando DOCX" : "Exportar DOCX"}
+              </button>
+            </div>
+
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 type="button"
@@ -350,8 +589,8 @@ export function DocumentRequestDetailAdmin({ requestId }: { requestId: string })
             <div className="flex items-start gap-3">
               <RefreshCw className="mt-0.5 h-4 w-4 text-gi-gold" aria-hidden={true} />
               <p className="text-sm leading-6 text-gi-muted">
-                Alterações de status, notas internas, texto final e URL são salvas pela rota
-                administrativa de atualização e preservam os dados estruturados originais.
+                Alterações de status, texto final e URL são salvas pela rota administrativa de
+                atualização e preservam os dados estruturados originais.
               </p>
             </div>
           </section>
@@ -440,5 +679,21 @@ function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
     timeStyle: "short"
+  }).format(date);
+}
+
+function formatDateOnly(value: string) {
+  if (!value) {
+    return "Não informado";
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Não informado";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short"
   }).format(date);
 }

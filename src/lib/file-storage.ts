@@ -139,7 +139,7 @@ export async function getAttachmentDownload(
     };
   }
 
-  const localPath = path.join(localUploadsDirectory, attachment.storage_path);
+  const localPath = resolveLocalStoragePath(attachment.storage_path);
 
   return {
     attachment: toPublicAttachment(attachment),
@@ -184,7 +184,7 @@ export async function deleteAttachment(requestId: string, attachmentId: string) 
   );
 
   try {
-    await unlink(path.join(localUploadsDirectory, attachment.storage_path));
+    await unlink(resolveLocalStoragePath(attachment.storage_path));
   } catch (error) {
     if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) {
       throw error;
@@ -279,6 +279,17 @@ function toDatabaseRow(attachment: InternalAttachment) {
     visibility: attachment.visibility,
     created_at: attachment.created_at
   };
+}
+
+function resolveLocalStoragePath(storagePath: string) {
+  const uploadsRoot = path.resolve(localUploadsDirectory);
+  const resolvedPath = path.resolve(uploadsRoot, storagePath);
+
+  if (resolvedPath !== uploadsRoot && !resolvedPath.startsWith(`${uploadsRoot}${path.sep}`)) {
+    throw new Error("Invalid local attachment path");
+  }
+
+  return resolvedPath;
 }
 
 function normalizeAttachment(row: Record<string, unknown>): InternalAttachment {

@@ -1,5 +1,6 @@
 import { CircleAlert, CircleCheck, KeyRound } from "lucide-react";
 import { HumanReviewNotice } from "@/components/human-review-notice";
+import { OrganizationSettingsForm } from "@/components/organization-settings-form";
 import { getWorkspaceRuntimeConfig } from "@/lib/runtime-config";
 
 const variables = [
@@ -94,6 +95,8 @@ export default function ConfiguracoesPage() {
       </section>
 
       <HumanReviewNotice />
+
+      <OrganizationSettingsForm />
 
       <section className="gi-panel p-5">
         <h2 className="text-base font-semibold text-gi-ink">Status operacional</h2>

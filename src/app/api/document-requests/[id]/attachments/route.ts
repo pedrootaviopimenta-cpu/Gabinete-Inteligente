@@ -6,6 +6,7 @@ import {
 } from "@/lib/attachment-constants";
 import {
   badRequestResponse,
+  forbiddenResponse,
   isSafeUuid,
   jsonNoStore,
   logControlledError,
@@ -13,7 +14,9 @@ import {
   unauthorizedResponse
 } from "@/lib/api-security";
 import { getDocumentRequest } from "@/lib/document-requests";
+import { createAuditEvent } from "@/lib/audit";
 import { listAttachments, saveAttachment } from "@/lib/file-storage";
+import { canUploadAttachments } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,6 +60,10 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!user) {
     return unauthorizedResponse();
+  }
+
+  if (!canUploadAttachments(user)) {
+    return forbiddenResponse("Operação não disponível para este perfil de usuário.");
   }
 
   const { id } = await context.params;
@@ -122,6 +129,26 @@ export async function POST(request: Request, context: RouteContext) {
           uploadedBy: user.username
         })
       );
+    }
+
+    try {
+      await createAuditEvent({
+        requestId: id,
+        eventType: "attachment_uploaded",
+        actorUsername: user.username,
+        actorRole: user.role,
+        description:
+          attachments.length === 1
+            ? "Documento anexado à solicitação."
+            : "Documentos anexados à solicitação.",
+        metadata: {
+          attachmentCount: attachments.length,
+          fileTypes: Array.from(new Set(files.map((file) => file.type))).slice(0, 10),
+          totalBytes: files.reduce((sum, file) => sum + file.size, 0)
+        }
+      });
+    } catch (error) {
+      logControlledError("audit_attachment_uploaded", error);
     }
 
     return jsonNoStore(

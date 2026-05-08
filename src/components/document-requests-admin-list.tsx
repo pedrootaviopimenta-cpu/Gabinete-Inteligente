@@ -13,6 +13,13 @@ import {
   type DocumentRequestPriority,
   type DocumentRequestStatus
 } from "@/lib/document-request-types";
+import {
+  deadlineStatusLabels,
+  getDaysUntilDue,
+  getDeadlineStatus,
+  type DeadlineFilter,
+  type DeadlineStatus
+} from "@/lib/deadlines";
 import { getModuleBySlug, modules, type ModuleSlug } from "@/lib/modules";
 import {
   ADMIN_COMPLETION_NOTICE,
@@ -25,6 +32,7 @@ type Filters = {
   status: "" | DocumentRequestStatus;
   moduleSlug: "" | ModuleSlug;
   priority: "" | DocumentRequestPriority;
+  deadline: "" | DeadlineFilter;
   query: string;
 };
 
@@ -32,6 +40,7 @@ const emptyFilters: Filters = {
   status: "",
   moduleSlug: "",
   priority: "",
+  deadline: "",
   query: ""
 };
 
@@ -71,7 +80,7 @@ export function DocumentRequestsAdminList() {
 
   useEffect(() => {
     void loadRequests();
-  }, [filters.status, filters.moduleSlug, filters.priority]);
+  }, [filters.status, filters.moduleSlug, filters.priority, filters.deadline]);
 
   async function loadRequests() {
     setIsLoading(true);
@@ -86,6 +95,9 @@ export function DocumentRequestsAdminList() {
     }
     if (filters.priority) {
       params.set("priority", filters.priority);
+    }
+    if (filters.deadline) {
+      params.set("deadline", filters.deadline);
     }
 
     const suffix = params.toString() ? `?${params.toString()}` : "";
@@ -204,6 +216,19 @@ export function DocumentRequestsAdminList() {
               value: priority
             }))}
           />
+
+          <FilterSelect
+            label="Prazo"
+            value={filters.deadline}
+            onChange={(value) =>
+              setFilters((current) => ({ ...current, deadline: value as Filters["deadline"] }))
+            }
+            options={[
+              { label: "Vencidas", value: "overdue" },
+              { label: "Próximas do vencimento", value: "due_soon" },
+              { label: "Sem prazo", value: "no_deadline" }
+            ]}
+          />
         </div>
       </section>
 
@@ -254,6 +279,7 @@ export function DocumentRequestsAdminList() {
                     <th className="px-5 py-3">Setor/unidade</th>
                     <th className="px-5 py-3">Prioridade</th>
                     <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">Prazo</th>
                     <th className="px-5 py-3">Criação</th>
                     <th className="px-5 py-3 text-right">Detalhe</th>
                   </tr>
@@ -301,6 +327,9 @@ function RequestTableRow({ request }: { request: DocumentRequest }) {
       <td className="px-5 py-4">
         <StatusBadge status={request.status} />
       </td>
+      <td className="px-5 py-4">
+        <DeadlineBadge request={request} />
+      </td>
       <td className="px-5 py-4 text-gi-muted">{formatDateTime(request.created_at)}</td>
       <td className="px-5 py-4 text-right">
         <Link
@@ -341,6 +370,12 @@ function RequestCard({ request }: { request: DocumentRequest }) {
           <span className="font-semibold text-gi-ink">Criada em:</span>{" "}
           {formatDateTime(request.created_at)}
         </p>
+        <div>
+          <span className="font-semibold text-gi-ink">Prazo:</span>{" "}
+          <span className="mt-1 inline-flex">
+            <DeadlineBadge request={request} />
+          </span>
+        </div>
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <PriorityBadge priority={request.priority} />
@@ -382,6 +417,32 @@ function FilterSelect({
         ))}
       </select>
     </label>
+  );
+}
+
+function DeadlineBadge({ request }: { request: DocumentRequest }) {
+  const status = getDeadlineStatus(request);
+  const days = getDaysUntilDue(request.due_date);
+  const classes: Record<DeadlineStatus, string> = {
+    no_prazo: "border-gi-navy/15 bg-gi-navy/5 text-gi-navy",
+    vence_hoje: "border-amber-200 bg-amber-50 text-amber-900",
+    proximo_vencimento: "border-gi-gold/40 bg-gi-gold/10 text-gi-navy",
+    vencido: "border-rose-200 bg-rose-50 text-rose-900",
+    concluido: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    sem_prazo: "border-gi-line bg-gi-background text-gi-muted"
+  };
+  const suffix =
+    days === null || status === "sem_prazo" || status === "concluido"
+      ? ""
+      : days < 0
+        ? ` · ${Math.abs(days)} dia(s) vencido`
+        : ` · ${days} dia(s)`;
+
+  return (
+    <span className={`rounded-md border px-2.5 py-1 text-xs font-semibold ${classes[status]}`}>
+      {deadlineStatusLabels[status]}
+      {suffix}
+    </span>
   );
 }
 

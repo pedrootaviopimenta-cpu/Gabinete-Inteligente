@@ -39,6 +39,8 @@ export type DocumentRequest = {
   module_slug: ModuleSlug;
   title: string;
   requester_name: string;
+  requester_username: string;
+  requester_user_id: string;
   requester_email: string;
   requester_phone: string;
   requester_department: string;
@@ -49,7 +51,12 @@ export type DocumentRequest = {
   internal_notes: string;
   final_document_text: string;
   final_document_url: string;
+  related_norms_text: string;
   protocol_number: string;
+  due_date: string;
+  received_at: string;
+  completed_at: string;
+  deadline_notes: string;
   created_at: string;
   updated_at: string;
 };
@@ -58,12 +65,17 @@ export type CreateDocumentRequestInput = {
   module_slug: ModuleSlug;
   title: string;
   requester_name: string;
+  requester_username?: string;
+  requester_user_id?: string;
   requester_email: string;
   requester_phone?: string;
   requester_department: string;
   priority: DocumentRequestPriority;
   structured_fields: FormValues;
   structured_context: string;
+  due_date?: string;
+  received_at?: string;
+  deadline_notes?: string;
 };
 
 export type UpdateDocumentRequestInput = Partial<
@@ -73,6 +85,11 @@ export type UpdateDocumentRequestInput = Partial<
     | "internal_notes"
     | "final_document_text"
     | "final_document_url"
+    | "related_norms_text"
+    | "due_date"
+    | "received_at"
+    | "completed_at"
+    | "deadline_notes"
   >
 >;
 

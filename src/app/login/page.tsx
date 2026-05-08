@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Building2, ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -64,6 +65,20 @@ export default async function LoginPage() {
                 <p className="mt-3 text-sm leading-6 text-gi-muted">
                   Informe suas credenciais autorizadas para acessar o ambiente de solicitações e
                   gestão documental.
+                </p>
+                <p className="mt-3 text-xs leading-5 text-gi-muted">
+                  Ao acessar, o usuário declara ciência dos{" "}
+                  <Link href="/termos-de-uso" className="font-semibold text-gi-navy underline">
+                    termos de uso
+                  </Link>{" "}
+                  e da{" "}
+                  <Link
+                    href="/politica-de-confidencialidade"
+                    className="font-semibold text-gi-navy underline"
+                  >
+                    política de confidencialidade
+                  </Link>
+                  .
                 </p>
 
                 <LoginForm />

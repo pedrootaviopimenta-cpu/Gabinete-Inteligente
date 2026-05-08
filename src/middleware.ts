@@ -17,6 +17,10 @@ const protectedPagePaths = [
 
 const protectedApiPaths = [
   "/api/document-requests",
+  "/api/my-document-requests",
+  "/api/dashboard",
+  "/api/municipal-norms",
+  "/api/settings",
   "/api/ai/draft",
   "/api/admin"
 ];
@@ -65,6 +69,10 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/api/document-requests/:path*",
+    "/api/my-document-requests/:path*",
+    "/api/dashboard/:path*",
+    "/api/municipal-norms/:path*",
+    "/api/settings/:path*",
     "/api/ai/draft/:path*",
     "/api/admin/:path*"
   ]

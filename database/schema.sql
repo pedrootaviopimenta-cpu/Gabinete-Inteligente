@@ -66,6 +66,8 @@ create table public.document_requests (
   module_slug text not null,
   title text not null,
   requester_name text not null,
+  requester_username text,
+  requester_user_id uuid,
   requester_email text not null,
   requester_phone text,
   requester_department text not null,
@@ -76,9 +78,23 @@ create table public.document_requests (
   internal_notes text,
   final_document_text text,
   final_document_url text,
+  related_norms_text text,
   protocol_number text not null unique,
+  due_date date,
+  received_at date,
+  completed_at timestamptz,
+  deadline_notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table public.protocol_sequences (
+  id uuid primary key default gen_random_uuid(),
+  prefix text not null,
+  year integer not null,
+  current_value integer not null default 0,
+  updated_at timestamptz not null default now(),
+  unique (prefix, year)
 );
 
 create table public.document_request_attachments (
@@ -91,6 +107,59 @@ create table public.document_request_attachments (
   uploaded_by text,
   visibility text not null default 'internal',
   created_at timestamptz not null default now()
+);
+
+create table public.document_request_messages (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.document_requests(id) on delete cascade,
+  author_type text not null check (author_type in ('admin', 'requester', 'system')),
+  author_name text,
+  visibility text not null check (visibility in ('public', 'internal')),
+  message text not null,
+  created_at timestamptz not null default now()
+);
+
+create table public.document_request_pending_items (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.document_requests(id) on delete cascade,
+  title text not null,
+  description text,
+  status text not null default 'pendente' check (status in ('pendente', 'enviado', 'dispensado', 'resolvido')),
+  requested_by text,
+  resolved_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.document_request_events (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid references public.document_requests(id) on delete cascade,
+  event_type text not null,
+  actor_username text,
+  actor_role text,
+  description text not null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table public.organization_settings (
+  id uuid primary key default gen_random_uuid(),
+  organization_name text not null,
+  city text,
+  state text,
+  cnpj text,
+  address text,
+  phone text,
+  email text,
+  website text,
+  mayor_name text,
+  attorney_name text,
+  default_secretary_name text,
+  header_text text,
+  footer_text text,
+  logo_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table public.ai_generation_logs (
@@ -110,7 +179,7 @@ create table public.ai_generation_logs (
 
 create table public.municipal_norms (
   id uuid primary key default gen_random_uuid(),
-  organization_id uuid not null references public.organizations(id) on delete cascade,
+  organization_id uuid references public.organizations(id) on delete cascade,
   norm_type text not null,
   number text not null,
   year integer,
@@ -173,7 +242,15 @@ create index documents_organization_module_idx on public.documents (organization
 create index document_requests_status_created_idx on public.document_requests (status, created_at desc);
 create index document_requests_module_created_idx on public.document_requests (module_slug, created_at desc);
 create index document_requests_priority_created_idx on public.document_requests (priority, created_at desc);
+create index document_requests_due_date_idx on public.document_requests (due_date, status);
+create index document_requests_requester_username_created_idx on public.document_requests (requester_username, created_at desc);
+create index document_requests_requester_email_created_idx on public.document_requests (requester_email, created_at desc);
+create index document_requests_requester_user_id_created_idx on public.document_requests (requester_user_id, created_at desc);
 create index document_request_attachments_request_idx on public.document_request_attachments (request_id, created_at desc);
+create index document_request_messages_request_created_idx on public.document_request_messages (request_id, created_at desc);
+create index document_request_pending_items_request_created_idx on public.document_request_pending_items (request_id, created_at);
+create index document_request_events_request_created_idx on public.document_request_events (request_id, created_at desc);
+create index document_request_events_type_created_idx on public.document_request_events (event_type, created_at desc);
 create index ai_generation_logs_organization_created_idx on public.ai_generation_logs (organization_id, created_at desc);
 create index municipal_norms_organization_subject_idx on public.municipal_norms (organization_id, subject);
 create index checklist_runs_organization_created_idx on public.checklist_runs (organization_id, created_at desc);
@@ -182,7 +259,12 @@ alter table public.organizations enable row level security;
 alter table public.profiles enable row level security;
 alter table public.documents enable row level security;
 alter table public.document_requests enable row level security;
+alter table public.protocol_sequences enable row level security;
 alter table public.document_request_attachments enable row level security;
+alter table public.document_request_messages enable row level security;
+alter table public.document_request_pending_items enable row level security;
+alter table public.document_request_events enable row level security;
+alter table public.organization_settings enable row level security;
 alter table public.ai_generation_logs enable row level security;
 alter table public.municipal_norms enable row level security;
 alter table public.checklist_templates enable row level security;

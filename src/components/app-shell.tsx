@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import type { Route } from "next";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Building2,
   ClipboardList,
   FileText,
+  FolderClock,
   LayoutDashboard,
   LogOut,
   Scale,
@@ -16,6 +18,14 @@ import {
   SquareCheckBig
 } from "lucide-react";
 import { modules } from "@/lib/modules";
+import {
+  canAccessAdmin,
+  canCreateRequests,
+  canManageUsers,
+  canViewOwnRequests,
+  userRoleLabels,
+  type UserRole
+} from "@/lib/permissions";
 
 const icons = {
   oficios: FileText,
@@ -29,14 +39,26 @@ export function AppShell({
   children,
   username,
   role
-}: Readonly<{ children: React.ReactNode; username: string; role: string }>) {
+}: Readonly<{ children: React.ReactNode; username: string; role: UserRole }>) {
   const pathname = usePathname();
   const router = useRouter();
+  const user = { role };
+  const visibleModules = modules.filter(() => canCreateRequests(user));
+  const [termsAccepted, setTermsAccepted] = useState(true);
+
+  useEffect(() => {
+    setTermsAccepted(localStorage.getItem("gi_terms_acceptance_v1") === "accepted");
+  }, []);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
     router.refresh();
+  }
+
+  function acceptTerms() {
+    localStorage.setItem("gi_terms_acceptance_v1", "accepted");
+    setTermsAccepted(true);
   }
 
   return (
@@ -57,13 +79,23 @@ export function AppShell({
 
           <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação principal">
             <NavLink href="/dashboard" icon={LayoutDashboard} label="Painel" pathname={pathname} />
-            <NavLink
-              href="/admin/solicitacoes"
-              icon={ClipboardList}
-              label="Solicitações"
-              pathname={pathname}
-            />
-            {modules.map((module) => {
+            {canViewOwnRequests(user) ? (
+              <NavLink
+                href={"/minhas-solicitacoes" as Route}
+                icon={FolderClock}
+                label="Minhas solicitações"
+                pathname={pathname}
+              />
+            ) : null}
+            {canAccessAdmin(user) ? (
+              <NavLink
+                href="/admin/solicitacoes"
+                icon={ClipboardList}
+                label="Solicitações"
+                pathname={pathname}
+              />
+            ) : null}
+            {visibleModules.map((module) => {
               const Icon = icons[module.slug];
 
               return (
@@ -76,12 +108,14 @@ export function AppShell({
                 />
               );
             })}
-            <NavLink
-              href="/configuracoes"
-              icon={Settings}
-              label="Configurações"
-              pathname={pathname}
-            />
+            {canManageUsers(user) ? (
+              <NavLink
+                href="/configuracoes"
+                icon={Settings}
+                label="Configurações"
+                pathname={pathname}
+              />
+            ) : null}
           </nav>
 
           <div className="border-t border-white/10 p-3">
@@ -91,7 +125,7 @@ export function AppShell({
               </p>
               <p className="mt-1 truncate text-sm text-white/82">{username}</p>
               <p className="mt-1 text-xs text-white/55">
-                {role === "senior_admin" ? "Administrador sênior" : "Usuário interno"}
+                {userRoleLabels[role] || "Usuário interno"}
               </p>
             </div>
             <button
@@ -109,11 +143,12 @@ export function AppShell({
       <div className="lg:pl-72">
         <header className="sticky top-0 z-20 border-b border-gi-line bg-white/90 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex flex-col gap-1 border-l-4 border-gi-gold pl-4">
-            <p className="gi-eyebrow">
-              Plataforma de apoio institucional
-            </p>
+            <p className="gi-eyebrow">Plataforma de apoio institucional</p>
             <p className="text-sm text-gi-muted">
               Produção documental assistida, governança e revisão humana obrigatória.
+            </p>
+            <p className="text-xs font-medium text-gi-navy">
+              Ambiente confidencial. Uso restrito a usuários autorizados.
             </p>
           </div>
         </header>
@@ -121,8 +156,17 @@ export function AppShell({
         <div className="border-b border-gi-line bg-gi-navy px-4 py-3 lg:hidden">
           <div className="flex gap-2 overflow-x-auto" aria-label="Navegação compacta">
             <MobileLink href="/dashboard" label="Painel" pathname={pathname} />
-            <MobileLink href="/admin/solicitacoes" label="Solicitações" pathname={pathname} />
-            {modules.map((module) => (
+            {canViewOwnRequests(user) ? (
+              <MobileLink
+                href={"/minhas-solicitacoes" as Route}
+                label="Minhas solicitações"
+                pathname={pathname}
+              />
+            ) : null}
+            {canAccessAdmin(user) ? (
+              <MobileLink href="/admin/solicitacoes" label="Solicitações" pathname={pathname} />
+            ) : null}
+            {visibleModules.map((module) => (
               <MobileLink
                 key={module.slug}
                 href={module.href}
@@ -130,7 +174,9 @@ export function AppShell({
                 pathname={pathname}
               />
             ))}
-            <MobileLink href="/configuracoes" label="Configurações" pathname={pathname} />
+            {canManageUsers(user) ? (
+              <MobileLink href="/configuracoes" label="Configurações" pathname={pathname} />
+            ) : null}
             <button
               type="button"
               onClick={() => void handleLogout()}
@@ -143,6 +189,33 @@ export function AppShell({
 
         <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
       </div>
+
+      {!termsAccepted ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gi-navy/70 px-4 backdrop-blur-sm">
+          <section className="max-w-lg rounded-lg border border-gi-line bg-white p-6 shadow-premium">
+            <h2 className="text-lg font-semibold text-gi-ink">
+              Ciência de uso e confidencialidade
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-gi-muted">
+              Este ambiente é confidencial, restrito a usuários autorizados e destinado a apoio
+              administrativo e documental. O sistema não emite decisão automática e não substitui
+              revisão humana por profissional, servidor ou autoridade competente.
+            </p>
+            <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-gi-ink">
+              <input type="checkbox" className="mt-1" onChange={acceptTerms} />
+              Declaro ciência dos termos de uso e da política de confidencialidade.
+            </label>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/termos-de-uso" className="gi-button-secondary">
+                Termos de uso
+              </Link>
+              <Link href="/politica-de-confidencialidade" className="gi-button-secondary">
+                Política de confidencialidade
+              </Link>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

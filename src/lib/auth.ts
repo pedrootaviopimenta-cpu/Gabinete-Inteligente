@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { isUserRole, type UserRole } from "@/lib/permissions";
 
 export const AUTH_COOKIE_NAME = "gi_session";
 export const SESSION_DURATION_SECONDS = 8 * 60 * 60;
@@ -9,14 +10,14 @@ export const SENIOR_ADMIN_ROLE = "senior_admin";
 
 type SessionPayload = {
   username: string;
-  role: typeof SENIOR_ADMIN_ROLE;
+  role: UserRole;
   issuedAt: number;
   expiresAt: number;
 };
 
 export type AuthenticatedUser = {
   username: string;
-  role: typeof SENIOR_ADMIN_ROLE;
+  role: UserRole;
   recoveryEmail: string;
   issuedAt: number;
   expiresAt: number;
@@ -94,7 +95,7 @@ export function verifySessionToken(token: string | undefined | null): Authentica
 
   if (
     payload.username !== admin.username ||
-    payload.role !== SENIOR_ADMIN_ROLE ||
+    !isUserRole(payload.role) ||
     payload.expiresAt <= now
   ) {
     return null;
@@ -102,7 +103,7 @@ export function verifySessionToken(token: string | undefined | null): Authentica
 
   return {
     username: payload.username,
-    role: SENIOR_ADMIN_ROLE,
+    role: payload.role,
     recoveryEmail: admin.recoveryEmail,
     issuedAt: payload.issuedAt,
     expiresAt: payload.expiresAt

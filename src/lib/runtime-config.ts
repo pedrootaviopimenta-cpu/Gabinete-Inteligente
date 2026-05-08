@@ -25,6 +25,14 @@ export function isAdminAiEnabled() {
   return readBooleanEnv("GI_ADMIN_AI_ENABLED", false);
 }
 
+export function isInternalAdminAiAvailable() {
+  return (
+    getGiDeliveryMode() === "hybrid" &&
+    isAdminAiEnabled() &&
+    Boolean(process.env.OPENAI_API_KEY)
+  );
+}
+
 export function getWorkspaceRuntimeConfig(): WorkspaceRuntimeConfig {
   return {
     deliveryMode: getGiDeliveryMode(),

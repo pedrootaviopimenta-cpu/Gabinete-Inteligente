@@ -8,10 +8,14 @@ import {
   type CreateDocumentRequestInput
 } from "@/lib/document-request-types";
 import { buildStructuredPayload, getFormDefinition, validateForm, type FormValues } from "@/lib/forms";
+import { parseDateFromAdministrativeText, type DeadlineFilter } from "@/lib/deadlines";
 import { getModuleBySlug, isModuleSlug, type ModuleSlug } from "@/lib/modules";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { createAuditEvent } from "@/lib/audit";
+import { canAccessAdmin, canCreateRequests } from "@/lib/permissions";
 import {
   badRequestResponse,
+  forbiddenResponse,
   hasOnlyAllowedKeys,
   isPlainRecord,
   jsonNoStore,
@@ -55,16 +59,22 @@ export async function GET(request: Request) {
     return unauthorizedResponse();
   }
 
+  if (!canAccessAdmin(user)) {
+    return forbiddenResponse("Operação restrita à equipe responsável.");
+  }
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") || "";
   const moduleSlug = searchParams.get("moduleSlug") || "";
   const priority = searchParams.get("priority") || "";
+  const deadline = normalizeDeadlineFilter(searchParams.get("deadline") || "");
 
   try {
     const requests = await listDocumentRequests({
       status: isDocumentRequestStatus(status) ? status : undefined,
       moduleSlug: isModuleSlug(moduleSlug) ? moduleSlug : undefined,
-      priority: isDocumentRequestPriority(priority) ? priority : undefined
+      priority: isDocumentRequestPriority(priority) ? priority : undefined,
+      deadline
     });
 
     return jsonNoStore({ requests });
@@ -81,6 +91,10 @@ export async function POST(request: Request) {
     return unauthorizedResponse();
   }
 
+  if (!canCreateRequests(user)) {
+    return forbiddenResponse("Operação não disponível para este perfil de usuário.");
+  }
+
   const parsedBody = await readJsonWithLimit<DocumentRequestPayload>(request);
 
   if ("error" in parsedBody) {
@@ -93,7 +107,7 @@ export async function POST(request: Request) {
     return badRequestResponse("Requisição inválida.");
   }
 
-  const validation = validatePayload(body);
+  const validation = validatePayload(body, user.username);
 
   if ("error" in validation) {
     return badRequestResponse(validation.error);
@@ -101,6 +115,23 @@ export async function POST(request: Request) {
 
   try {
     const documentRequest = await createDocumentRequest(validation.input);
+
+    try {
+      await createAuditEvent({
+        requestId: documentRequest.id,
+        eventType: "request_created",
+        actorUsername: user.username,
+        actorRole: user.role,
+        description: "Solicitação criada pelo formulário assistido.",
+        metadata: {
+          moduleSlug: documentRequest.module_slug,
+          priority: documentRequest.priority,
+          protocolNumber: documentRequest.protocol_number
+        }
+      });
+    } catch (error) {
+      logControlledError("audit_request_created", error);
+    }
 
     return jsonNoStore(
       {
@@ -117,7 +148,10 @@ export async function POST(request: Request) {
   }
 }
 
-function validatePayload(body: DocumentRequestPayload):
+function validatePayload(
+  body: DocumentRequestPayload,
+  requesterUsername: string
+):
   | { input: CreateDocumentRequestInput }
   | { error: string } {
   if (!body.moduleSlug || !isModuleSlug(body.moduleSlug)) {
@@ -163,14 +197,54 @@ function validatePayload(body: DocumentRequestPayload):
       module_slug: body.moduleSlug,
       title: title || module.name,
       requester_name: requesterName,
+      requester_username: requesterUsername,
+      requester_user_id: "",
       requester_email: requesterEmail,
       requester_phone: trimToMax(body.requesterPhone, 60),
       requester_department: requesterDepartment,
       priority: body.priority,
       structured_fields: fields,
-      structured_context: trimToMax(body.context, 30_000) || buildStructuredPayload(form, fields)
+      structured_context: trimToMax(body.context, 30_000) || buildStructuredPayload(form, fields),
+      ...extractDeadlineFields(body.moduleSlug, fields)
     }
   };
+}
+
+function extractDeadlineFields(moduleSlug: ModuleSlug, fields: FormValues) {
+  const dueDate =
+    moduleSlug === "ministerio-publico"
+      ? parseDateFromAdministrativeText(fields.prazo_resposta)
+      : moduleSlug === "oficios"
+        ? parseDateFromAdministrativeText(fields.prazo_mencionado)
+        : moduleSlug === "checklists"
+          ? parseDateFromAdministrativeText(fields.prazo_interno)
+          : "";
+  const receivedAt =
+    moduleSlug === "ministerio-publico"
+      ? parseDateFromAdministrativeText(fields.data_recebimento)
+      : "";
+
+  return {
+    due_date: dueDate,
+    received_at: receivedAt,
+    deadline_notes: buildDeadlineNotes(moduleSlug, fields)
+  };
+}
+
+function buildDeadlineNotes(moduleSlug: ModuleSlug, fields: FormValues) {
+  if (moduleSlug === "ministerio-publico") {
+    return typeof fields.prazo_resposta === "string" ? fields.prazo_resposta.trim().slice(0, 2_000) : "";
+  }
+
+  if (moduleSlug === "oficios") {
+    return typeof fields.prazo_mencionado === "string" ? fields.prazo_mencionado.trim().slice(0, 2_000) : "";
+  }
+
+  if (moduleSlug === "checklists") {
+    return typeof fields.prazo_interno === "string" ? fields.prazo_interno.trim().slice(0, 2_000) : "";
+  }
+
+  return "";
 }
 
 function normalizeFields(fields: FormValues): FormValues {
@@ -191,4 +265,10 @@ function normalizeFields(fields: FormValues): FormValues {
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function normalizeDeadlineFilter(value: string): DeadlineFilter | undefined {
+  return value === "overdue" || value === "due_soon" || value === "no_deadline"
+    ? value
+    : undefined;
 }

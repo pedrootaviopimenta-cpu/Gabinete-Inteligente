@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from "@/lib/auth";
 import {
   badRequestResponse,
+  forbiddenResponse,
   isSafeUuid,
   jsonNoStore,
   logControlledError,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/api-security";
 import { getDocumentRequest } from "@/lib/document-requests";
 import { deleteAttachment } from "@/lib/file-storage";
+import { canUploadAttachments } from "@/lib/permissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +24,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
   if (!user) {
     return unauthorizedResponse();
+  }
+
+  if (!canUploadAttachments(user)) {
+    return forbiddenResponse("Operação não disponível para este perfil de usuário.");
   }
 
   const { id, attachmentId } = await context.params;

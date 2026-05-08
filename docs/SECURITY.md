@@ -20,7 +20,11 @@ A rota `/login` é a única entrada pública interativa. Usuários autenticados 
 
 ## Dados Confidenciais
 
-Solicitações, campos estruturados, contexto estruturado, notas internas, texto final, URL de documento final e informações de setores municipais não devem ser expostos sem autenticação.
+Solicitações, campos estruturados, contexto estruturado, notas internas, mensagens internas, pendências documentais, texto final, URL de documento final e informações de setores municipais não devem ser expostos sem autenticação.
+
+Mensagens públicas ao solicitante e notas internas devem permanecer formalmente separadas. Conteúdos com `visibility=internal` são reservados à equipe responsável e não devem ser exibidos no painel do solicitante.
+
+Notas internas são confidenciais e devem concentrar análise administrativa, cautelas e encaminhamentos reservados. Quando uma informação precisar ser compartilhada com o usuário externo, registre-a como mensagem pública ao solicitante, com linguagem formal e sem expor estratégia interna.
 
 As APIs devem retornar mensagens genéricas, sem stack trace, segredos, cabeçalhos, cookies, prompts completos ou erros brutos de provedores externos.
 
@@ -34,4 +38,4 @@ Em desenvolvimento, os anexos podem ser gravados em `.local-data/uploads/`, com 
 
 ## Persistência Local
 
-O diretório `.local-data` é fallback exclusivo de desenvolvimento. Nunca commite `.local-data`, `document_requests.json`, `document_request_attachments.json` ou arquivos em `.local-data/uploads/`. Em produção, use Supabase, Supabase Storage ou banco e armazenamento apropriados, com controle de acesso, auditoria e backup compatíveis com dados sensíveis.
+O diretório `.local-data` é fallback exclusivo de desenvolvimento. Nunca commite `.local-data`, `document_requests.json`, `document_request_attachments.json`, `document_request_messages.json`, `document_request_pending_items.json`, `document_request_events.json`, `protocol_sequences.json`, `municipal_norms.json`, `organization_settings.json` ou arquivos em `.local-data/uploads/`. Em produção, use Supabase, Supabase Storage ou banco e armazenamento apropriados, com controle de acesso, auditoria e backup compatíveis com dados sensíveis.
